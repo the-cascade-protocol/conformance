@@ -1,8 +1,8 @@
 {
   "description": "Cross-SDK test vectors for Cascade Protocol Deterministic UUID (CDP-UUID)",
   "algorithm": "SHA-1 of input string, formatted as UUID5 layout \u2014 see deterministicUuid() in cascade-cli/src/lib/fhir-converter/types.ts",
-  "version": "1.2",
-  "date": "2026-09-03",
+  "version": "1.3",
+  "date": "2026-09-04",
   "primitiveVectors": [
     {
       "label": "sanity-check-hello",
@@ -209,6 +209,24 @@
       },
       "canonicalIdentityString": "Condition::patient=urn:uuid:patient-smith|snomedCode=B02,Z01,a01",
       "expectedUri": "urn:uuid:e590569a-10fb-5463-b024-8263ead93f9a"
+    },
+    {
+      "label": "condition-member-order-astral-vs-bmp",
+      "comment": "THE DIVERGENCE, AT THE MEMBER SORT. A set-valued field holding U+FF01 FULLWIDTH EXCLAMATION MARK and U+1D51E MATHEMATICAL FRAKTUR SMALL A. By CODE POINT, which is what core v3.6 states, FF01 < 1D51E and the field canonicalizes to the fullwidth character first; this expectedUri asserts that. By UTF-16 CODE-UNIT order, which is what a bare JavaScript `Array.prototype.sort()` performs, U+1D51E's leading surrogate D835 is below FF01 and the astral member comes first, minting a different identifier. This is the member-sort twin of keyOrderVectors' 'key-order-astral-vs-bmp': the two sorts are separate lines of code in every implementation, so correcting one does not imply the other. Both JavaScript implementations failed this vector when it was written and pass at the revisions `keyOrderImplementationStatus` names. The members are also listed here in the OPPOSITE order to the canonical one, so an implementation that does not sort at all fails this too.",
+      "proves": [
+        "order-independence",
+        "member-order-astral-plane"
+      ],
+      "resourceType": "Condition",
+      "contentFields": {
+        "patient": "urn:uuid:patient-smith",
+        "snomedCode": [
+          "\ud835\udd1e",
+          "\uff01"
+        ]
+      },
+      "canonicalIdentityString": "Condition::patient=urn:uuid:patient-smith|snomedCode=\uff01,\ud835\udd1e",
+      "expectedUri": "urn:uuid:f2d72e66-e623-592b-adf3-e2dd98e7534c"
     }
   ],
   "keyOrderVectors": [
@@ -274,7 +292,7 @@
     },
     {
       "label": "key-order-astral-vs-bmp",
-      "comment": "THE DIVERGENCE. U+FF01 FULLWIDTH EXCLAMATION MARK and U+1D51E MATHEMATICAL FRAKTUR SMALL A. By CODE POINT, which is what core v3.6 states, FF01 < 1D51E and U+FF01 comes first; this expectedUri asserts that. By UTF-16 CODE-UNIT order, which is what a JavaScript string comparison performs, U+1D51E's leading surrogate D835 is below FF01 and the astral key comes first, minting a different identifier. Whether the protocol means code point as written or the code-unit behaviour its current implementations share is an OPEN cross-implementation question; this vector asserts the rule as written and `keyOrderImplementationStatus` records who diverges.",
+      "comment": "THE DIVERGENCE. U+FF01 FULLWIDTH EXCLAMATION MARK and U+1D51E MATHEMATICAL FRAKTUR SMALL A. By CODE POINT, which is what core v3.6 states, FF01 < 1D51E and U+FF01 comes first; this expectedUri asserts that. By UTF-16 CODE-UNIT order, which is what a JavaScript string comparison performs, U+1D51E's leading surrogate D835 is below FF01 and the astral key comes first, minting a different identifier. Both JavaScript implementations failed this vector when it was written on 2026-09-03, agreeing with each other and not with the rule; both were corrected on 2026-09-04 and pass. `keyOrderImplementationStatus` records the measurement on both dates.",
       "proves": [
         "key-order-code-point-not-locale",
         "key-order-astral-plane"
@@ -301,10 +319,12 @@
     "invariants": {
       "order-independence": "Shuffling the members of a multi-valued identity input MUST NOT change the identifier.",
       "scalar-agreement": "A field holding exactly one value MUST mint the same identifier whether spelled as a scalar or a one-element sequence.",
-      "duplicate-independence": "Repeating a member MUST NOT change the identifier."
+      "duplicate-independence": "Repeating a member MUST NOT change the identifier.",
+      "member-order-astral-plane": "Members are ordered by Unicode code point across the WHOLE of Unicode, including characters outside the Basic Multilingual Plane. This is the member-sort counterpart of keyOrderRule's key-order-astral-plane; the key sort and the member sort are separate lines of code in every implementation, so passing one says nothing about the other."
     },
     "separatorNote": "expectedUri values here are computed with the recommended U+002C separator. An implementation that already ships a different fixed separator at an existing identity site KEEPS it (changing it re-mints every identifier that site ever produced) and satisfies this vector set by checking the three INVARIANTS rather than the literal expectedUri.",
-    "scopeLimit": "This rule governs identity inputs whose source element is a SET (FHIR CodeableConcept.coding, and the code fields made 0..* in health v2.6 / clinical v1.14). It MUST NOT be applied to an input whose source order carries meaning: FHIR name[0] is the primary name, and a component or note list is a sequence, not a set. Sorting there merges records the source deliberately distinguished."
+    "scopeLimit": "This rule governs identity inputs whose source element is a SET (FHIR CodeableConcept.coding, and the code fields made 0..* in health v2.6 / clinical v1.14). It MUST NOT be applied to an input whose source order carries meaning: FHIR name[0] is the primary name, and a component or note list is a sequence, not a set. Sorting there merges records the source deliberately distinguished.",
+    "divergenceNote": "UTF-16 code-unit order and Unicode code-point order agree across the entire Basic Multilingual Plane and disagree on exactly one shape of input: an astral-plane character (a surrogate pair, leading unit D800..DBFF) compared with a BMP character above U+D7FF. A bare JavaScript `Array.prototype.sort()` is code-unit order, so a JavaScript implementation that sorts members that way passes every other vector in this array and fails 'condition-member-order-astral-vs-bmp'. Both JavaScript implementations sorted members that way until 2026-09-04 and now use an explicit code-point comparator at this sort site as well as at the key sort; see keyOrderImplementationStatus. See keyOrderRule.divergenceNote for the same statement about the key sort."
   },
   "keyOrderRule": {
     "statedIn": "core v3.6, normatively, on cascade:cascadeUri in ontologies/core/v1/core.ttl",
@@ -315,47 +335,53 @@
       "key-order-astral-plane": "Ordering is by code point across the WHOLE of Unicode, including characters outside the Basic Multilingual Plane."
     },
     "oracle": "scripts/gen_identity_key_order_vectors.py. Python orders `str` by code point natively, so the expectedUri values here are not borrowed from any implementation. Run it with --check to recompute every vector in this file, including the pre-existing ones.",
-    "divergenceNote": "UTF-16 code-unit order and Unicode code-point order agree across the entire Basic Multilingual Plane. They disagree on exactly one shape of input: an astral-plane character (a surrogate pair, leading unit D800..DBFF) compared with a BMP character above U+D7FF. A JavaScript string comparison (`<`, `>`, or a bare `.sort()`) is code-unit order, so a JavaScript implementation passes every BMP vector here and fails `key-order-astral-vs-bmp`. Whether the protocol means code point as written or the code-unit behaviour its implementations share is an OPEN cross-implementation question. These vectors assert the rule as core v3.6 writes it; keyOrderImplementationStatus records who diverges."
+    "divergenceNote": "UTF-16 code-unit order and Unicode code-point order agree across the entire Basic Multilingual Plane. They disagree on exactly one shape of input: an astral-plane character (a surrogate pair, leading unit D800..DBFF) compared with a BMP character above U+D7FF. A JavaScript string comparison (`<`, `>`, or a bare `.sort()`) is code-unit order, so an implementation written that way passes every BMP vector here and fails `key-order-astral-vs-bmp`. Both JavaScript implementations were written that way and both failed it on 2026-09-03. The question was settled on 2026-09-04 in favour of the rule as core v3.6 writes it \u2014 code point \u2014 and both implementations were corrected with an explicit code-point comparator; see keyOrderImplementationStatus."
   },
   "keyOrderImplementationStatus": {
-    "$comment": "Measured 2026-09-03. Each implementation was run on the `contentFields` of every keyOrderVectors entry and its output compared with `expectedUri`. This block is a record of measurement, not a licence: a divergence recorded here is still a divergence.",
-    "measuredOn": "2026-09-03",
+    "$comment": "First measured 2026-09-03, when BOTH implementations diverged from the rule as core v3.6 writes it. Re-measured 2026-09-04 at the revisions named below, where both pass. Each implementation is run on the `contentFields` of every keyOrderVectors entry and of every multiValuedFieldVectors entry, and its output compared with `expectedUri`. This block is a record of measurement, not a licence: a divergence recorded here would still be a divergence.",
+    "measuredOn": "2026-09-04",
     "implementations": [
       {
         "implementation": "sdk-typescript",
-        "revision": "20a0e01",
-        "comparator": "(a < b ? -1 : a > b ? 1 : 0) on JavaScript strings, i.e. UTF-16 code-unit order",
-        "comparatorSite": "src/utils/deterministic-uri.ts, contentHashedUri",
+        "comparatorSite": "src/utils/deterministic-uri.ts \u2014 compareCodePoints, used by contentHashedUri (key sort) and canonicalFieldValue (member sort)",
         "passes": [
           "key-order-insertion-independence-a",
           "key-order-insertion-independence-b",
           "key-order-underscore-after-uppercase",
-          "key-order-bmp-non-ascii-control"
+          "key-order-bmp-non-ascii-control",
+          "key-order-astral-vs-bmp",
+          "condition-member-order-astral-vs-bmp"
         ],
-        "fails": [
-          "key-order-astral-vs-bmp"
-        ],
-        "mints": "urn:uuid:3dabab92-db40-5b56-9d37-227d01b602db"
+        "fails": [],
+        "divergedAtRevision": "20a0e01",
+        "divergedComparator": "(a < b ? -1 : a > b ? 1 : 0) on JavaScript strings, i.e. UTF-16 code-unit order",
+        "comparator": "compareCodePoints(a, b), iterating codePointAt, i.e. Unicode code-point order",
+        "revision": "4f6e40a",
+        "branch": "fix/code-point-order"
       },
       {
         "implementation": "cascade-cli",
-        "revision": "991862a",
-        "comparator": "(a < b ? -1 : a > b ? 1 : 0) on JavaScript strings, i.e. UTF-16 code-unit order",
-        "comparatorSite": "src/lib/fhir-converter/types.ts, contentHashedUri",
+        "comparatorSite": "src/lib/fhir-converter/types.ts \u2014 compareCodePoints, used by contentHashedUri (key sort) and canonicalSetKey (member sort)",
         "passes": [
           "key-order-insertion-independence-a",
           "key-order-insertion-independence-b",
           "key-order-underscore-after-uppercase",
-          "key-order-bmp-non-ascii-control"
+          "key-order-bmp-non-ascii-control",
+          "key-order-astral-vs-bmp",
+          "condition-member-order-astral-vs-bmp"
         ],
-        "fails": [
-          "key-order-astral-vs-bmp"
-        ],
-        "mints": "urn:uuid:3dabab92-db40-5b56-9d37-227d01b602db"
+        "fails": [],
+        "divergedAtRevision": "991862a",
+        "divergedComparator": "(a < b ? -1 : a > b ? 1 : 0) on JavaScript strings, i.e. UTF-16 code-unit order",
+        "comparator": "compareCodePoints(a, b), iterating codePointAt, i.e. Unicode code-point order",
+        "revision": "8f2a9ac",
+        "branch": "fix/code-point-order"
       }
     ],
-    "divergenceDiagnosis": "Both implementations mint urn:uuid:3dabab92-db40-5b56-9d37-227d01b602db for key-order-astral-vs-bmp. That is exactly the CDP-UUID of 'Observation::\\ud835\\udd1e=fraktur|\\uff01=fullwidth', the identity string produced by UTF-16 code-unit order, so the divergence is the code-unit/code-point disagreement and nothing else. The two implementations agree with EACH OTHER, so no identifier splits between them today; the open question is whether they agree with the spec.",
+    "divergenceDiagnosis": "RESOLVED 2026-09-04; the diagnosis is kept as history because it is what the vectors were added to establish. AS MEASURED 2026-09-03, at sdk-typescript 20a0e01 and cascade-cli 991862a, both implementations minted urn:uuid:3dabab92-db40-5b56-9d37-227d01b602db for key-order-astral-vs-bmp. That is exactly the CDP-UUID of 'Observation::\\ud835\\udd1e=fraktur|\\uff01=fullwidth', the identity string produced by UTF-16 code-unit order, so the divergence was the code-unit/code-point disagreement and nothing else. The two implementations agreed with EACH OTHER, so no identifier split between them; the open question was whether they agreed with the spec.",
     "notRecordedInKnownFailures": "This divergence is deliberately NOT listed in KNOWN_FAILURES.json. That file is keyed on fixtures that scripts/run_conformance.py executes, and the runner classifies test-vectors.json as carrying no RDF of its own, so it never appears in a results file. A baseline entry for it therefore lands in check_baseline.py's `gone` set and the gate exits 1 with IMPROVEMENT NOT RECORDED (measured 2026-09-03). Listing it would turn the corpus CI red, which is the opposite of what the baseline is for. The divergence is recorded here instead, next to the vector that measures it.",
-    "downstreamConsumers": "keyOrderVectors is a NEW top-level array. The consumer that reads this file today (sdk-typescript tests/deterministic-uri.test.ts) iterates primitiveVectors, contentHashedUriVectors and multiValuedFieldVectors, so adding this array turns no downstream job red on its own. An implementation opts in by iterating it, and should expect key-order-astral-vs-bmp to fail until the code-point/code-unit question is settled."
+    "downstreamConsumers": "Both implementations now iterate keyOrderVectors and the full multiValuedFieldVectors array: sdk-typescript in tests/deterministic-uri.test.ts, cascade-cli in tests/identity-conformance-vectors.test.ts, which is new \u2014 that repository mints CDP-UUIDs and had never read this file. A new vector added here therefore reaches both as a failing test rather than as silence, which is the property the arrays are for.",
+    "previouslyMeasuredOn": "2026-09-03",
+    "resolution": "The rule as core v3.6 writes it stands: Unicode code point, not UTF-16 code unit. Both implementations were corrected on branch 'fix/code-point-order' \u2014 sdk-typescript at 4f6e40a and cascade-cli at 8f2a9ac \u2014 each adding an explicit compareCodePoints comparator and applying it at BOTH sort sites, the identity keys and the members of a set-valued field. Each was observed RED on the astral vectors before the change and green after. Only an identifier that sorted an astral-plane character against a BMP character at or above U+E000 moves; everything on the Basic Multilingual Plane is bit-identical, which each implementation measured over this fixture corpus rather than asserted: 60,152 minted URIs, 7 rows moved, all 7 inside this file and all 7 the astral vectors themselves, 59,507 URIs unchanged across the other 165 fixtures. The two dumps agree with each other row for row."
   }
 }
