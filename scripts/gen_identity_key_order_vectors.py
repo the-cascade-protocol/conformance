@@ -185,10 +185,10 @@ KEY_ORDER_VECTORS = [
             "1D51E and U+FF01 comes first; this expectedUri asserts that. By UTF-16 "
             "CODE-UNIT order, which is what a JavaScript string comparison performs, "
             "U+1D51E's leading surrogate D835 is below FF01 and the astral key comes "
-            "first, minting a different identifier. Whether the protocol means code "
-            "point as written or the code-unit behaviour its current implementations "
-            "share is an OPEN cross-implementation question; this vector asserts the "
-            "rule as written and `keyOrderImplementationStatus` records who diverges."
+            "first, minting a different identifier. Both JavaScript implementations "
+            "failed this vector when it was written on 2026-09-03, agreeing with each "
+            "other and not with the rule; both were corrected on 2026-09-04 and pass. "
+            "`keyOrderImplementationStatus` records the measurement on both dates."
         ),
         "proves": ["key-order-code-point-not-locale", "key-order-astral-plane"],
         "resourceType": "Observation",
@@ -220,9 +220,11 @@ MEMBER_ORDER_VECTORS = [
             "below FF01 and the astral member comes first, minting a different "
             "identifier. This is the member-sort twin of keyOrderVectors' "
             "'key-order-astral-vs-bmp': the two sorts are separate lines of code in "
-            "every implementation, so correcting one does not imply the other. The "
-            "members are also listed here in the OPPOSITE order to the canonical one, "
-            "so an implementation that does not sort at all fails this too."
+            "every implementation, so correcting one does not imply the other. Both "
+            "JavaScript implementations failed this vector when it was written and pass "
+            "at the revisions `keyOrderImplementationStatus` names. The members are also "
+            "listed here in the OPPOSITE order to the canonical one, so an implementation "
+            "that does not sort at all fails this too."
         ),
         "proves": ["order-independence", "member-order-astral-plane"],
         "resourceType": "Condition",
