@@ -38,8 +38,9 @@ Every count below is derived from the fixture files themselves, not maintained b
 | Encounter | `encounter-` | 3 | Clinical encounters and visits |
 | Imaging Study | `imaging-` | 1 | Imaging studies and results |
 | Medication Administration | `medadmin-` | 1 | Medication administration events |
+| Supplement | `supp-` | 2 | Dietary supplements and OTC products (`clinical:SupplementShape`) |
 | Data Absence | `absent-` | 3 | A record whose primary value is absent for a stated reason (`cascade:dataAbsentReason`, core v3.6) |
-| **Total** | | **90** | 24 data types |
+| **Total** | | **92** | 25 data types |
 
 ### RDF fixtures (`fixtures/**/*.ttl`)
 
@@ -69,7 +70,7 @@ The third exists because Cascade shapes report a value that existing data alread
 | `genomics/vrs/` | 1 | 1 | 0 | 0 | GA4GH VRS allele conversion oracle |
 | **Total** | **71** | **47** | **18** | **6** | |
 
-**Grand total: 161 executable fixtures** (90 JSON + 71 Turtle), which is the number `scripts/run_conformance.py` reports on every run. The JSON table above had drifted from the files by seven — `absent-` was missing entirely and `lab-` and `proc-` were behind — and is corrected here against a run.
+**Grand total: 163 executable fixtures** (92 JSON + 71 Turtle), which is the number `scripts/run_conformance.py` reports on every run. The JSON table above had drifted from the files by seven — `absent-` was missing entirely and `lab-` and `proc-` were behind — and is corrected here against a run.
 
 A further 94 files under `fixtures/` are the source side of those conversion oracles (`*.input.xml`, `*.input.json`, `*.input.ldpatch`, `*.input.vcf.gz`), their `*.gaps.json` sidecars, and `INVENTORY.md` files. They carry no RDF of their own, so the SHACL runner does not execute them; each has a corresponding `*.expected.ttl` that it does execute. The runner reports them by category on every run so the number is auditable rather than assumed.
 
@@ -153,10 +154,10 @@ The runner also refuses a checkout that sits at the pinned commit but has uncomm
 As of the pinned revision in `scripts/SPEC_PIN` (`spec` at core 3.7, health 2.8, clinical 1.16, coverage 1.5, checkup 3.3):
 
 ```
-passed  133
+passed  135
 failed   28
 skipped   0
-total   161        63,281 constraint checks evaluated
+total   163        63,353 constraint checks evaluated
 ```
 
 The first execution of these fixtures, against the older `spec` revision the pin

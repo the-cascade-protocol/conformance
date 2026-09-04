@@ -51,6 +51,7 @@
         "DenialNotice",
         "AppealRecord",
         "SocialHistoryRecord",
+        "Supplement",
         "ProxyAgent"
       ],
       "description": "The Cascade Protocol data type under test"

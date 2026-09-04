@@ -1,0 +1,34 @@
+{
+  "id": "supp-001",
+  "description": "Happy path: active dietary supplement (Vitamin D3 2000 IU daily) self-reported by the patient",
+  "dataType": "Supplement",
+  "vocabulary": "clinical",
+  "input": {
+    "id": "urn:uuid:supp-0001-aaaa-bbbb-ccccddddeeee",
+    "type": "Supplement",
+    "supplementName": "Vitamin D3 (cholecalciferol)",
+    "regulatoryStatus": "dietarySupplement",
+    "dose": "2000 IU",
+    "frequency": "once daily",
+    "form": "softgel",
+    "brand": "Nature Made",
+    "evidenceStrength": "moderateEvidence",
+    "isActive": true,
+    "reasonForUse": "Vitamin D insufficiency",
+    "startDate": "2025-11-03T00:00:00Z",
+    "dataProvenance": "PatientReported",
+    "schemaVersion": "1.3"
+  },
+  "expectedOutput": {
+    "turtle": "@prefix cascade: <https://ns.cascadeprotocol.org/core/v1#> .\n@prefix clinical: <https://ns.cascadeprotocol.org/clinical/v1#> .\n@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .\n\n<urn:uuid:supp-0001-aaaa-bbbb-ccccddddeeee> a clinical:Supplement ;\n    clinical:supplementName \"Vitamin D3 (cholecalciferol)\" ;\n    clinical:regulatoryStatus \"dietarySupplement\" ;\n    clinical:dose \"2000 IU\" ;\n    clinical:frequency \"once daily\" ;\n    clinical:form \"softgel\" ;\n    clinical:brand \"Nature Made\" ;\n    clinical:evidenceStrength \"moderateEvidence\" ;\n    clinical:isActive true ;\n    clinical:reasonForUse \"Vitamin D insufficiency\" ;\n    clinical:startDate \"2025-11-03T00:00:00Z\"^^xsd:dateTime ;\n    cascade:dataProvenance cascade:PatientReported ;\n    cascade:schemaVersion \"1.3\" .\n",
+    "validationMode": "shacl-valid"
+  },
+  "shouldAccept": true,
+  "tags": [
+    "happy-path",
+    "clinical",
+    "self-reported",
+    "full-fields"
+  ],
+  "notes": "Dose and active status ride clinical:dose and clinical:isActive. These are NOT clinical:dosage and clinical:status, which are clinical:MedicationShape's predicates; SupplementShape constrains neither, so a supplement written with the medication spellings validates clean and is silently unreadable. This fixture pins the correct pair."
+}
