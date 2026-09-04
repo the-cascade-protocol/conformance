@@ -1,6 +1,6 @@
 {
   "description": "Cross-SDK test vectors for Cascade Protocol Deterministic UUID (CDP-UUID)",
-  "algorithm": "SHA-1 of input string, formatted as UUID5 layout \u2014 see deterministicUuid() in cascade-cli/src/lib/fhir-converter/types.ts",
+  "algorithm": "SHA-1 of input string, formatted as UUID5 layout — see deterministicUuid() in cascade-cli/src/lib/fhir-converter/types.ts",
   "version": "1.3",
   "date": "2026-09-04",
   "primitiveVectors": [
@@ -221,11 +221,11 @@
       "contentFields": {
         "patient": "urn:uuid:patient-smith",
         "snomedCode": [
-          "\ud835\udd1e",
-          "\uff01"
+          "𝔞",
+          "！"
         ]
       },
-      "canonicalIdentityString": "Condition::patient=urn:uuid:patient-smith|snomedCode=\uff01,\ud835\udd1e",
+      "canonicalIdentityString": "Condition::patient=urn:uuid:patient-smith|snomedCode=！,𝔞",
       "expectedUri": "urn:uuid:f2d72e66-e623-592b-adf3-e2dd98e7534c"
     }
   ],
@@ -284,10 +284,10 @@
       ],
       "resourceType": "Observation",
       "contentFields": {
-        "\u00e9": "e-acute",
+        "é": "e-acute",
         "z": "zed"
       },
-      "canonicalIdentityString": "Observation::z=zed|\u00e9=e-acute",
+      "canonicalIdentityString": "Observation::z=zed|é=e-acute",
       "expectedUri": "urn:uuid:51e2ab4b-c6e3-5ad8-99e3-859649c381fb"
     },
     {
@@ -299,10 +299,10 @@
       ],
       "resourceType": "Observation",
       "contentFields": {
-        "\ud835\udd1e": "fraktur",
-        "\uff01": "fullwidth"
+        "𝔞": "fraktur",
+        "！": "fullwidth"
       },
-      "canonicalIdentityString": "Observation::\uff01=fullwidth|\ud835\udd1e=fraktur",
+      "canonicalIdentityString": "Observation::！=fullwidth|𝔞=fraktur",
       "expectedUri": "urn:uuid:94048491-e370-5d1e-9372-25a5dfd23966"
     }
   ],
@@ -335,15 +335,15 @@
       "key-order-astral-plane": "Ordering is by code point across the WHOLE of Unicode, including characters outside the Basic Multilingual Plane."
     },
     "oracle": "scripts/gen_identity_key_order_vectors.py. Python orders `str` by code point natively, so the expectedUri values here are not borrowed from any implementation. Run it with --check to recompute every vector in this file, including the pre-existing ones.",
-    "divergenceNote": "UTF-16 code-unit order and Unicode code-point order agree across the entire Basic Multilingual Plane. They disagree on exactly one shape of input: an astral-plane character (a surrogate pair, leading unit D800..DBFF) compared with a BMP character above U+D7FF. A JavaScript string comparison (`<`, `>`, or a bare `.sort()`) is code-unit order, so an implementation written that way passes every BMP vector here and fails `key-order-astral-vs-bmp`. Both JavaScript implementations were written that way and both failed it on 2026-09-03. The question was settled on 2026-09-04 in favour of the rule as core v3.6 writes it \u2014 code point \u2014 and both implementations were corrected with an explicit code-point comparator; see keyOrderImplementationStatus."
+    "divergenceNote": "UTF-16 code-unit order and Unicode code-point order agree across the entire Basic Multilingual Plane. They disagree on exactly one shape of input: an astral-plane character (a surrogate pair, leading unit D800..DBFF) compared with a BMP character above U+D7FF. A JavaScript string comparison (`<`, `>`, or a bare `.sort()`) is code-unit order, so an implementation written that way passes every BMP vector here and fails `key-order-astral-vs-bmp`. Both JavaScript implementations were written that way and both failed it on 2026-09-03. The question was settled on 2026-09-04 in favour of the rule as core v3.6 writes it — code point — and both implementations were corrected with an explicit code-point comparator; see keyOrderImplementationStatus."
   },
   "keyOrderImplementationStatus": {
-    "$comment": "First measured 2026-09-03, when BOTH implementations diverged from the rule as core v3.6 writes it. Re-measured 2026-09-04 at the revisions named below, where both pass. Each implementation is run on the `contentFields` of every keyOrderVectors entry and of every multiValuedFieldVectors entry, and its output compared with `expectedUri`. This block is a record of measurement, not a licence: a divergence recorded here would still be a divergence.",
+    "$comment": "First measured 2026-09-03, when BOTH implementations diverged from the rule as core v3.6 writes it. Re-measured 2026-09-04 at the revisions named below, where both pass. Each implementation is run on the `contentFields` of every keyOrderVectors entry and of every multiValuedFieldVectors entry, and its output compared with `expectedUri`. This block is a record of measurement, not a licence: a divergence recorded here would still be a divergence. Revisions updated 2026-09-04 to the merge commits on main; branchRevision keeps the pre-merge commit the measurement was taken at.",
     "measuredOn": "2026-09-04",
     "implementations": [
       {
         "implementation": "sdk-typescript",
-        "comparatorSite": "src/utils/deterministic-uri.ts \u2014 compareCodePoints, used by contentHashedUri (key sort) and canonicalFieldValue (member sort)",
+        "comparatorSite": "src/utils/deterministic-uri.ts — compareCodePoints, used by contentHashedUri (key sort) and canonicalFieldValue (member sort)",
         "passes": [
           "key-order-insertion-independence-a",
           "key-order-insertion-independence-b",
@@ -356,12 +356,13 @@
         "divergedAtRevision": "20a0e01",
         "divergedComparator": "(a < b ? -1 : a > b ? 1 : 0) on JavaScript strings, i.e. UTF-16 code-unit order",
         "comparator": "compareCodePoints(a, b), iterating codePointAt, i.e. Unicode code-point order",
-        "revision": "4f6e40a",
-        "branch": "fix/code-point-order"
+        "branch": "main (PR #20 merged 2026-09-04)",
+        "branchRevision": "4f6e40a",
+        "revision": "b2cb4a5"
       },
       {
         "implementation": "cascade-cli",
-        "comparatorSite": "src/lib/fhir-converter/types.ts \u2014 compareCodePoints, used by contentHashedUri (key sort) and canonicalSetKey (member sort)",
+        "comparatorSite": "src/lib/fhir-converter/types.ts — compareCodePoints, used by contentHashedUri (key sort) and canonicalSetKey (member sort)",
         "passes": [
           "key-order-insertion-independence-a",
           "key-order-insertion-independence-b",
@@ -374,14 +375,15 @@
         "divergedAtRevision": "991862a",
         "divergedComparator": "(a < b ? -1 : a > b ? 1 : 0) on JavaScript strings, i.e. UTF-16 code-unit order",
         "comparator": "compareCodePoints(a, b), iterating codePointAt, i.e. Unicode code-point order",
-        "revision": "8f2a9ac",
-        "branch": "fix/code-point-order"
+        "branch": "main (PR #94 merged 2026-09-04)",
+        "branchRevision": "8f2a9ac",
+        "revision": "5f6c06f"
       }
     ],
     "divergenceDiagnosis": "RESOLVED 2026-09-04; the diagnosis is kept as history because it is what the vectors were added to establish. AS MEASURED 2026-09-03, at sdk-typescript 20a0e01 and cascade-cli 991862a, both implementations minted urn:uuid:3dabab92-db40-5b56-9d37-227d01b602db for key-order-astral-vs-bmp. That is exactly the CDP-UUID of 'Observation::\\ud835\\udd1e=fraktur|\\uff01=fullwidth', the identity string produced by UTF-16 code-unit order, so the divergence was the code-unit/code-point disagreement and nothing else. The two implementations agreed with EACH OTHER, so no identifier split between them; the open question was whether they agreed with the spec.",
     "notRecordedInKnownFailures": "This divergence is deliberately NOT listed in KNOWN_FAILURES.json. That file is keyed on fixtures that scripts/run_conformance.py executes, and the runner classifies test-vectors.json as carrying no RDF of its own, so it never appears in a results file. A baseline entry for it therefore lands in check_baseline.py's `gone` set and the gate exits 1 with IMPROVEMENT NOT RECORDED (measured 2026-09-03). Listing it would turn the corpus CI red, which is the opposite of what the baseline is for. The divergence is recorded here instead, next to the vector that measures it.",
-    "downstreamConsumers": "Both implementations now iterate keyOrderVectors and the full multiValuedFieldVectors array: sdk-typescript in tests/deterministic-uri.test.ts, cascade-cli in tests/identity-conformance-vectors.test.ts, which is new \u2014 that repository mints CDP-UUIDs and had never read this file. A new vector added here therefore reaches both as a failing test rather than as silence, which is the property the arrays are for.",
+    "downstreamConsumers": "Both implementations now iterate keyOrderVectors and the full multiValuedFieldVectors array: sdk-typescript in tests/deterministic-uri.test.ts, cascade-cli in tests/identity-conformance-vectors.test.ts, which is new — that repository mints CDP-UUIDs and had never read this file. A new vector added here therefore reaches both as a failing test rather than as silence, which is the property the arrays are for.",
     "previouslyMeasuredOn": "2026-09-03",
-    "resolution": "The rule as core v3.6 writes it stands: Unicode code point, not UTF-16 code unit. Both implementations were corrected on branch 'fix/code-point-order' \u2014 sdk-typescript at 4f6e40a and cascade-cli at 8f2a9ac \u2014 each adding an explicit compareCodePoints comparator and applying it at BOTH sort sites, the identity keys and the members of a set-valued field. Each was observed RED on the astral vectors before the change and green after. Only an identifier that sorted an astral-plane character against a BMP character at or above U+E000 moves; everything on the Basic Multilingual Plane is bit-identical, which each implementation measured over this fixture corpus rather than asserted: 60,152 minted URIs, 7 rows moved, all 7 inside this file and all 7 the astral vectors themselves, 59,507 URIs unchanged across the other 165 fixtures. The two dumps agree with each other row for row."
+    "resolution": "The rule as core v3.6 writes it stands: Unicode code point, not UTF-16 code unit. Both implementations were corrected on branch 'fix/code-point-order' — sdk-typescript at 4f6e40a and cascade-cli at 8f2a9ac — each adding an explicit compareCodePoints comparator and applying it at BOTH sort sites, the identity keys and the members of a set-valued field. Each was observed RED on the astral vectors before the change and green after. Only an identifier that sorted an astral-plane character against a BMP character at or above U+E000 moves; everything on the Basic Multilingual Plane is bit-identical, which each implementation measured over this fixture corpus rather than asserted: 60,152 minted URIs, 7 rows moved, all 7 inside this file and all 7 the astral vectors themselves, 59,507 URIs unchanged across the other 165 fixtures. The two dumps agree with each other row for row."
   }
 }
