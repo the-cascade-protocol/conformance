@@ -26,8 +26,8 @@ python3 scripts/check_baseline.py --results results.json
 ```
 
 Against the revision in `scripts/SPEC_PIN` (`spec` at core 3.7 / health 2.8 /
-clinical 1.16 / coverage 1.5), which is what CI executes: **133 passed / 28
-failed / 0 skipped / 161 total**, 63,281 constraint checks, and all 28 are
+clinical 1.16 / coverage 1.5), which is what CI executes: **135 passed / 28
+failed / 0 skipped / 163 total**, 63,353 constraint checks, and all 28 are
 enumerated in `KNOWN_FAILURES.json`, so the ratchet holds and the job is green.
 
 The result depends on which `spec` revision you point it at, so **always say which**,

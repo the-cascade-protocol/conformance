@@ -203,6 +203,22 @@ clinical=1.17
 #   SocialHistoryRecordShape (clinical/social-history-smoking.ttl, social-003).
 # clinical=1.9: cascade:AIExtracted added to the dataProvenance sh:in enum on every clinical record shape; an AIExtracted Medication is now SHACL-valid. Fixtures: med-011.
 # clinical=1.8: Medication RDF type and predicates migrated from health: to clinical: namespace
+# clinical=1.7: clinical:Supplement and clinical:SupplementShape, the explicit
+#   regulatory separation between a dietary supplement and an FDA-approved
+#   medication. The shape requires clinical:supplementName and
+#   clinical:regulatoryStatus (sh:in dietarySupplement | otcDrug | homeopathic |
+#   herbalRemedy | unknown) at sh:Violation, plus the usual dataProvenance and
+#   schemaVersion. Fixtures: supp-001 (a full active supplement) and supp-002
+#   (NEGATIVE: regulatoryStatus omitted, which is the constraint the class exists
+#   for). Both evaluate 36 constraints; before these two the shape was targeted by
+#   no fixture in this repository and nothing exercised it.
+#   NOT covered by a fixture, and it is a real gap rather than an oversight: a
+#   Supplement carrying clinical:dosage and clinical:status -- MedicationShape's
+#   predicates -- instead of clinical:dose and clinical:isActive. SupplementShape
+#   constrains neither of the medication spellings, so SHACL's open-world default
+#   reports CONFORMS and the dose and active status are silently unreadable. No
+#   fixture polarity in this suite can state "accepted but wrong"; asserting it
+#   needs either a sh:closed SupplementShape or a sh:not binding in spec.
 coverage=1.5
 # coverage=1.5: coverage:status. FHIR R4 Coverage.status, required binding to
 #   fm-status (active | cancelled | draft | entered-in-error), at sh:Violation --

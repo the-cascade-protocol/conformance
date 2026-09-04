@@ -1,0 +1,28 @@
+{
+  "id": "supp-002",
+  "description": "Negative: Supplement missing required clinical:regulatoryStatus",
+  "dataType": "Supplement",
+  "vocabulary": "clinical",
+  "input": {
+    "id": "urn:uuid:supp-0002-aaaa-bbbb-ccccddddeeee",
+    "type": "Supplement",
+    "supplementName": "Turmeric / curcumin extract",
+    "dose": "500 mg",
+    "frequency": "twice daily",
+    "isActive": true,
+    "dataProvenance": "PatientReported",
+    "schemaVersion": "1.3"
+  },
+  "expectedOutput": {
+    "turtle": "@prefix cascade: <https://ns.cascadeprotocol.org/core/v1#> .\n@prefix clinical: <https://ns.cascadeprotocol.org/clinical/v1#> .\n@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .\n\n<urn:uuid:supp-0002-aaaa-bbbb-ccccddddeeee> a clinical:Supplement ;\n    clinical:supplementName \"Turmeric / curcumin extract\" ;\n    clinical:dose \"500 mg\" ;\n    clinical:frequency \"twice daily\" ;\n    clinical:isActive true ;\n    cascade:dataProvenance cascade:PatientReported ;\n    cascade:schemaVersion \"1.3\" .\n",
+    "validationMode": "shacl-valid"
+  },
+  "shouldAccept": false,
+  "tags": [
+    "negative",
+    "required-field",
+    "clinical"
+  ],
+  "shaclConstraintViolated": "clinical:SupplementShape requires clinical:regulatoryStatus (sh:minCount 1, sh:in (\"dietarySupplement\" \"otcDrug\" \"homeopathic\" \"herbalRemedy\" \"unknown\")). The constraint exists so a supplement can never be read as an FDA-approved medication by omission.",
+  "notes": "Every other required property is present, so the run reports exactly the regulatoryStatus violation and nothing else."
+}
