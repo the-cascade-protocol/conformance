@@ -24,6 +24,17 @@ Run:
     python3 scripts/gen_identity_key_order_vectors.py --emit
         Print the `keyOrderVectors` array as JSON, for pasting into
         test-vectors.json.
+
+    python3 scripts/gen_identity_key_order_vectors.py --emit-members
+        Print the astral member-order entries destined for the
+        `multiValuedFieldVectors` array, for pasting into test-vectors.json.
+
+WHY THERE ARE TWO EMIT FLAGS. The key sort and the member sort are two separate
+lines of code in every implementation, and an implementation can get one right
+while the other still compares UTF-16 code units. `keyOrderVectors` measures the
+first; the entries `--emit-members` produces live in `multiValuedFieldVectors`
+and measure the second, on the same astral/BMP pair, so a fix that touches only
+one site cannot read as green.
 """
 
 from __future__ import annotations
@@ -189,14 +200,56 @@ KEY_ORDER_VECTORS = [
 ]
 
 
-def build() -> list:
+# The same divergence, one step lower down: not the order of the identity KEYS
+# but the order of the MEMBERS of a single set-valued field. `canonical_field_value`
+# above sorts those, and every current implementation sorts them with a bare
+# `.sort()`, which is UTF-16 code-unit order. Until this vector existed the member
+# sort was unmeasured, so an implementation could correct its key comparator, pass
+# every keyOrderVectors entry, and still mint a divergent identifier for any record
+# whose field held an astral member.
+MEMBER_ORDER_VECTORS = [
+    {
+        "label": "condition-member-order-astral-vs-bmp",
+        "comment": (
+            "THE DIVERGENCE, AT THE MEMBER SORT. A set-valued field holding U+FF01 "
+            "FULLWIDTH EXCLAMATION MARK and U+1D51E MATHEMATICAL FRAKTUR SMALL A. By "
+            "CODE POINT, which is what core v3.6 states, FF01 < 1D51E and the field "
+            "canonicalizes to the fullwidth character first; this expectedUri asserts "
+            "that. By UTF-16 CODE-UNIT order, which is what a bare JavaScript "
+            "`Array.prototype.sort()` performs, U+1D51E's leading surrogate D835 is "
+            "below FF01 and the astral member comes first, minting a different "
+            "identifier. This is the member-sort twin of keyOrderVectors' "
+            "'key-order-astral-vs-bmp': the two sorts are separate lines of code in "
+            "every implementation, so correcting one does not imply the other. The "
+            "members are also listed here in the OPPOSITE order to the canonical one, "
+            "so an implementation that does not sort at all fails this too."
+        ),
+        "proves": ["order-independence", "member-order-astral-plane"],
+        "resourceType": "Condition",
+        "contentFields": {
+            "patient": PATIENT,
+            "snomedCode": [ASTRAL, FULLWIDTH_BANG],
+        },
+    },
+]
+
+
+def _expand(vectors: list) -> list:
     out = []
-    for v in KEY_ORDER_VECTORS:
+    for v in vectors:
         entry = dict(v)
         entry["canonicalIdentityString"] = identity_string(v["resourceType"], v["contentFields"])
         entry["expectedUri"] = content_hashed_uri(v["resourceType"], v["contentFields"])
         out.append(entry)
     return out
+
+
+def build() -> list:
+    return _expand(KEY_ORDER_VECTORS)
+
+
+def build_members() -> list:
+    return _expand(MEMBER_ORDER_VECTORS)
 
 
 def check() -> int:
@@ -248,10 +301,12 @@ def main(argv=None) -> int:
                    help="recompute every vector in test-vectors.json and report disagreements")
     g.add_argument("--emit", action="store_true",
                    help="print the keyOrderVectors array as JSON")
+    g.add_argument("--emit-members", action="store_true",
+                   help="print the astral member-order entries for multiValuedFieldVectors as JSON")
     args = p.parse_args(argv)
     if args.check:
         return check()
-    json.dump(build(), sys.stdout, indent=2, ensure_ascii=True)
+    json.dump(build_members() if args.emit_members else build(), sys.stdout, indent=2, ensure_ascii=True)
     sys.stdout.write("\n")
     return 0
 

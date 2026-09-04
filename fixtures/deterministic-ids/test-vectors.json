@@ -1,8 +1,8 @@
 {
   "description": "Cross-SDK test vectors for Cascade Protocol Deterministic UUID (CDP-UUID)",
   "algorithm": "SHA-1 of input string, formatted as UUID5 layout \u2014 see deterministicUuid() in cascade-cli/src/lib/fhir-converter/types.ts",
-  "version": "1.2",
-  "date": "2026-09-03",
+  "version": "1.3",
+  "date": "2026-09-04",
   "primitiveVectors": [
     {
       "label": "sanity-check-hello",
@@ -209,6 +209,24 @@
       },
       "canonicalIdentityString": "Condition::patient=urn:uuid:patient-smith|snomedCode=B02,Z01,a01",
       "expectedUri": "urn:uuid:e590569a-10fb-5463-b024-8263ead93f9a"
+    },
+    {
+      "label": "condition-member-order-astral-vs-bmp",
+      "comment": "THE DIVERGENCE, AT THE MEMBER SORT. A set-valued field holding U+FF01 FULLWIDTH EXCLAMATION MARK and U+1D51E MATHEMATICAL FRAKTUR SMALL A. By CODE POINT, which is what core v3.6 states, FF01 < 1D51E and the field canonicalizes to the fullwidth character first; this expectedUri asserts that. By UTF-16 CODE-UNIT order, which is what a bare JavaScript `Array.prototype.sort()` performs, U+1D51E's leading surrogate D835 is below FF01 and the astral member comes first, minting a different identifier. This is the member-sort twin of keyOrderVectors' 'key-order-astral-vs-bmp': the two sorts are separate lines of code in every implementation, so correcting one does not imply the other. The members are also listed here in the OPPOSITE order to the canonical one, so an implementation that does not sort at all fails this too.",
+      "proves": [
+        "order-independence",
+        "member-order-astral-plane"
+      ],
+      "resourceType": "Condition",
+      "contentFields": {
+        "patient": "urn:uuid:patient-smith",
+        "snomedCode": [
+          "\ud835\udd1e",
+          "\uff01"
+        ]
+      },
+      "canonicalIdentityString": "Condition::patient=urn:uuid:patient-smith|snomedCode=\uff01,\ud835\udd1e",
+      "expectedUri": "urn:uuid:f2d72e66-e623-592b-adf3-e2dd98e7534c"
     }
   ],
   "keyOrderVectors": [
@@ -301,10 +319,12 @@
     "invariants": {
       "order-independence": "Shuffling the members of a multi-valued identity input MUST NOT change the identifier.",
       "scalar-agreement": "A field holding exactly one value MUST mint the same identifier whether spelled as a scalar or a one-element sequence.",
-      "duplicate-independence": "Repeating a member MUST NOT change the identifier."
+      "duplicate-independence": "Repeating a member MUST NOT change the identifier.",
+      "member-order-astral-plane": "Members are ordered by Unicode code point across the WHOLE of Unicode, including characters outside the Basic Multilingual Plane. This is the member-sort counterpart of keyOrderRule's key-order-astral-plane; the key sort and the member sort are separate lines of code in every implementation, so passing one says nothing about the other."
     },
     "separatorNote": "expectedUri values here are computed with the recommended U+002C separator. An implementation that already ships a different fixed separator at an existing identity site KEEPS it (changing it re-mints every identifier that site ever produced) and satisfies this vector set by checking the three INVARIANTS rather than the literal expectedUri.",
-    "scopeLimit": "This rule governs identity inputs whose source element is a SET (FHIR CodeableConcept.coding, and the code fields made 0..* in health v2.6 / clinical v1.14). It MUST NOT be applied to an input whose source order carries meaning: FHIR name[0] is the primary name, and a component or note list is a sequence, not a set. Sorting there merges records the source deliberately distinguished."
+    "scopeLimit": "This rule governs identity inputs whose source element is a SET (FHIR CodeableConcept.coding, and the code fields made 0..* in health v2.6 / clinical v1.14). It MUST NOT be applied to an input whose source order carries meaning: FHIR name[0] is the primary name, and a component or note list is a sequence, not a set. Sorting there merges records the source deliberately distinguished.",
+    "divergenceNote": "UTF-16 code-unit order and Unicode code-point order agree across the entire Basic Multilingual Plane and disagree on exactly one shape of input: an astral-plane character (a surrogate pair, leading unit D800..DBFF) compared with a BMP character above U+D7FF. A bare JavaScript `Array.prototype.sort()` is code-unit order, so a JavaScript implementation that sorts members that way passes every other vector in this array and fails 'condition-member-order-astral-vs-bmp'. See keyOrderRule.divergenceNote for the same statement about the key sort."
   },
   "keyOrderRule": {
     "statedIn": "core v3.6, normatively, on cascade:cascadeUri in ontologies/core/v1/core.ttl",
