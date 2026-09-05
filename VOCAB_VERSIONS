@@ -18,7 +18,7 @@
 # 2026-08-28 both read core=3.7 health=2.8 clinical=1.16 coverage=1.6
 # coverage=1.6: cascade:AIExtracted joins InsurancePlanShape dataProvenance
 #   (every clinical/health shape had it since clinical v1.9; this was the miss).
-#   AI-extracted InsurancePlan fixture tracked in root 3.287, not yet here.
+#   AI-extracted InsurancePlan fixture tracked upstream, not yet here.
 # checkup=3.3 pots=1.4, and the pin is the spec PR #31 merge commit 678ae0d
 # (tags vocab/core-v3.7, vocab/health-v2.8, vocab/clinical-v1.16,
 # vocab/coverage-v1.5, all four on that commit).
