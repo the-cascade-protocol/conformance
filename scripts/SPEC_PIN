@@ -27,7 +27,7 @@
 # cascade:AIExtracted to InsurancePlanShape's dataProvenance set. Neither
 # changes any existing fixture's verdict; the AIExtracted InsurancePlan and
 # documentReferenceStatus WARN fixtures this release makes possible are tracked
-# upstream (root backlog 3.287) rather than rushed here.
+# upstream rather than rushed here.
 #
 # Re-measured at this commit: see the PR for counts.
 
