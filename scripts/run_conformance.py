@@ -53,6 +53,7 @@ from pathlib import Path
 
 try:
     import pyshacl
+    import rdflib
     from rdflib import BNode, Graph, Literal, URIRef
     from rdflib.namespace import RDF, RDFS, SH
 except ImportError as exc:  # pragma: no cover - environment problem, not a fixture problem
@@ -66,6 +67,48 @@ try:
     import jsonschema
 except ImportError:  # pragma: no cover
     jsonschema = None
+
+
+# --------------------------------------------------------------------------
+# Literal handling
+# --------------------------------------------------------------------------
+#
+# THE LOAD-BEARING LINE IN THIS FILE THAT IS NOT ABOUT SHAPES.
+#
+# rdflib rewrites the lexical form of a typed literal on parse whenever it
+# recognises the datatype: it stores the canonical serialisation of the parsed
+# Python value instead of what the document wrote. So
+# `"2026-02-14T08:00:00Z"^^xsd:dateTime` comes back as
+# `"2026-02-14T08:00:00+00:00"`, and `"132"^^xsd:double` comes back as
+# `"132.0"`. Nothing warns, and the resulting graph is not the document's data:
+# RDF 1.1 Concepts section 3.3 makes two literals the same term only when
+# lexical form, datatype IRI and language tag are all equal, so a rewritten
+# literal is a DIFFERENT term that happens to denote the same value.
+#
+# That matters here for a reason specific to this repository. These fixtures
+# exist to be compared across implementations, and `expectedOutput.turtle` is
+# published as the exact bytes an SDK should produce. A runner that quietly
+# reads them as something else is asserting conformance to a document nobody
+# wrote. Across this corpus rdflib's default would rewrite 483 typed literals in
+# 88 of 182 Turtle documents (see `scripts/check_literal_fidelity.py`, which
+# measures it and gates on the result).
+#
+# `rdflib.NORMALIZE_LITERALS = False` turns the rewrite off at the point the
+# literal is constructed. It does NOT weaken validation, and the three things
+# worth being sure of are all upstream of the branch it disables, in
+# `rdflib/term.py` `Literal.__new__`:
+#
+#   * the parsed Python `value` is still computed, so `sh:minInclusive` and the
+#     other value-comparison constraints are unaffected;
+#   * `ill_typed` is still computed, and computed BEFORE the normalisation
+#     branch, so `sh:datatype` still rejects a malformed lexical form;
+#   * `sh:pattern` is the only constraint that reads a lexical form directly,
+#     and every `sh:pattern` in the pinned shapes is declared over
+#     `sh:datatype xsd:string`, which rdflib never normalises.
+#
+# It is a module-level rdflib setting, so it must be applied before anything is
+# parsed -- shapes included, since the shapes graph is data too.
+rdflib.NORMALIZE_LITERALS = False
 
 
 # --------------------------------------------------------------------------

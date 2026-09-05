@@ -15,6 +15,22 @@ name: conformance
 #                    only when nothing got worse and nothing got better without
 #                    the record being updated.
 #
+#   literal-fidelity checks that parsing a fixture does not change the literals it
+#                    authored. rdflib rewrites the lexical form of a typed literal
+#                    on parse unless NORMALIZE_LITERALS is off, and a rewritten
+#                    literal is a different RDF term (RDF 1.1 Concepts 3.3), so
+#                    this is the runner reading a document nobody wrote.
+#
+#                    REPORT-ONLY ON PURPOSE, for now. The check is new and its
+#                    Turtle scanner is the only reader of this corpus that is not
+#                    rdflib, so a red result here could still be the scanner's
+#                    fault rather than the repository's. Running it non-gating
+#                    first lets that be observed across real pull requests before
+#                    anything is blocked on it. It is expected to report zero; if
+#                    it holds at zero it should be promoted to a gate by dropping
+#                    `--report-only`, and the promotion is a deliberate change
+#                    with its own pull request, not a drive-by.
+#
 # What must never happen: making this green by skipping a fixture, relaxing an
 # assertion, or letting the baseline absorb a failure this repository could have
 # fixed. The baseline is legitimate only because it fails in both directions —
@@ -71,6 +87,48 @@ jobs:
             echo '## Runner mutation tests'
             echo '```'
             cat selftest.txt 2>/dev/null || echo '(no output)'
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  literal-fidelity:
+    name: typed-literal fidelity (report-only)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install pinned dependencies
+        run: python -m pip install -r scripts/requirements.txt
+
+      - name: Compare every authored typed literal against what rdflib returns
+        # --report-only makes this exit 0 whatever it finds, so this step cannot
+        # turn the workflow red while the check is being trialled. The report is
+        # still printed in full and lands in the job summary below. Drop the flag
+        # to turn it into a gate; nothing else needs to change.
+        #
+        # Not piped into tee: --report-only means the exit code carries no
+        # information, but exit 2 (the scanner and the parser disagree about what
+        # this repository contains) still does, and a pipe would hide it.
+        run: |
+          set +e
+          python scripts/check_literal_fidelity.py --report-only > literal-fidelity.txt 2>&1
+          rc=$?
+          set -e
+          cat literal-fidelity.txt
+          if [ "$rc" -ge 2 ]; then
+            echo "::warning::literal fidelity self-check failed (exit $rc); the report above is not usable"
+          fi
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo '## Typed-literal fidelity (report-only, non-gating)'
+            echo '```'
+            cat literal-fidelity.txt 2>/dev/null || echo '(no output)'
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
 

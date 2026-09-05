@@ -37,6 +37,7 @@ git -C ../spec checkout "$(grep '^commit=' scripts/SPEC_PIN | cut -d= -f2)"
 python3 scripts/run_conformance.py --spec-dir ../spec --json results.json  # the truth
 python3 scripts/check_baseline.py --results results.json                   # the gate
 python3 scripts/selftest_runner.py --spec-dir ../spec                      # proof the gate can fail
+python3 scripts/check_literal_fidelity.py                                  # proof the parser did not rewrite the fixtures
 ```
 
 The suite is red on its own terms; the job is green only when nothing got worse and nothing got better without `KNOWN_FAILURES.json` being updated. The gate exits 2, rather than passing, if the baseline is missing or unparseable, if the run evaluated zero constraints, if it used `--allow-spec-drift`, or if the baseline and the run disagree about the `spec` revision.

@@ -11,6 +11,7 @@ Downstream SDKs (sdk-typescript, sdk-python) and tools (cascade-cli) must pass a
 - `schema/fixture-schema.json` — JSON Schema for the fixture format (includes `dataType` enum).
 - `scripts/run_conformance.py` — executes every fixture against the SHACL shapes from a pinned `spec` checkout. `scripts/SPEC_PIN` names the commit.
 - `scripts/selftest_runner.py` — mutation tests proving the runner can fail.
+- `scripts/check_literal_fidelity.py` — proves parsing a fixture does not change the literals it authored. rdflib rewrites typed literals on parse by default (`"...Z"^^xsd:dateTime` -> `+00:00`, `"132"^^xsd:double` -> `"132.0"`), which is a different RDF term for the same value; the runner sets `rdflib.NORMALIZE_LITERALS = False` and this script is the tripwire on that line. Exits 1 on any rewrite, 0 with `--report-only`.
 - `reference-patient-pod/` — **Canonical** home of the reference pod: 22 files of synthetic Turtle showing real schema usage. `cascade-cli` reads it from here, and `cascadeprotocol.org` publishes a generated copy of it at `/reference-patient-pod/` that its `scripts/sync-reference-pod.sh --check` holds byte-identical to this directory. Edit the pod here and nowhere else.
 
 ## MANDATORY: run the suite before claiming a fixture works
@@ -23,6 +24,7 @@ python3 scripts/run_conformance.py --spec-dir ../spec --json results.json
 
 # 2. the gate: did anything get worse, or better without the record being updated?
 python3 scripts/check_baseline.py --results results.json
+python3 scripts/check_literal_fidelity.py
 ```
 
 Against the revision in `scripts/SPEC_PIN` (`spec` at core 3.7 / health 2.8 /

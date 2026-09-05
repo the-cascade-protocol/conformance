@@ -88,6 +88,9 @@ python3 scripts/run_conformance.py --spec-dir ../spec --json results.json
 
 # 2. the gate: did anything get worse, or better without the record being updated?
 python3 scripts/check_baseline.py --results results.json
+
+# 3. the parser check: did reading a fixture change what the fixture says?
+python3 scripts/check_literal_fidelity.py
 ```
 
 `--spec-dir` also reads from `$CASCADE_SPEC_DIR`, and defaults to `../spec`. Useful flags: `--json PATH` writes machine-readable results, `--select GLOB` restricts the run while debugging (CI never uses it), `--quiet` suppresses the text report.
@@ -142,11 +145,27 @@ The runner also refuses a checkout that sits at the pinned commit but has uncomm
 
 `--allow-spec-drift` bypasses both checks for local experiments against unreleased vocabulary. CI never passes it, the results file records that it was used, and the gate refuses to ratchet a run that used it — a drifted run is not evidence about the pinned vocabulary.
 
+### Typed literals are compared by lexical form, not by value
+
+RDF 1.1 Concepts [section 3.3](https://www.w3.org/TR/rdf11-concepts/#section-Graph-Literal) makes two literals the same term only when their lexical form, datatype IRI **and** language tag are all equal. `"2026-02-14T08:00:00Z"^^xsd:dateTime` and `"2026-02-14T08:00:00+00:00"^^xsd:dateTime` denote the same instant and are *different terms*. So do `"132"^^xsd:double` and `"132.0"^^xsd:double`.
+
+This is not a technicality for a repository whose fixtures exist to be compared across implementations. `expectedOutput.turtle` is published as the bytes an SDK is expected to produce, and a runner that reads those bytes as something else is asserting conformance to a document nobody wrote.
+
+rdflib does read them as something else, by default and without warning. `rdflib.NORMALIZE_LITERALS` is `True` out of the box, and `Literal.__new__` then stores the canonical serialisation of the parsed Python value in place of the authored lexical form. Measured over this repository at rdflib 7.6.0: **483 typed literals in 88 of 182 Turtle documents** come back rewritten — 393 `xsd:dateTime` (`Z` becoming `+00:00`) and 90 `xsd:double`.
+
+Two things follow, and both are in the tree:
+
+- `scripts/run_conformance.py` sets `rdflib.NORMALIZE_LITERALS = False` before it parses anything, shapes included. This does not weaken validation. The parsed value is still computed, so `sh:minInclusive` and friends are unchanged; `ill_typed` is still computed, and computed *before* the branch being disabled, so `sh:datatype` still rejects a malformed lexical form; and `sh:pattern` — the one constraint that reads a lexical form directly — is declared over `sh:datatype xsd:string` at every occurrence in the pinned shapes, which rdflib never normalises. Turning it off leaves the full suite byte-identical: same 163 fixtures, same 63,335 constraint checks, same verdicts.
+- `scripts/check_literal_fidelity.py` proves it stayed off. It reads every typed literal out of the file bytes with a Turtle scanner that shares no code with rdflib, requires that reader and the parse to agree on what the corpus contains (they disagree, it exits `2` and reports nothing else), and then fails if any authored lexical form changed. Deleting the one line in the runner takes it from `0` to `483` and from exit `0` to exit `1`.
+
+An SDK reading these fixtures inherits the same obligation. If your Turtle parser normalises literals, an `exact-match` comparison is being made against a document that is not the one in this repository, and the failure will not appear until another implementation with a faithful parser disagrees with you.
+
 ### Continuous integration
 
 `.github/workflows/conformance.yml` runs on every push to `main` and every pull request, in two jobs:
 
 - **runner mutation tests** runs `scripts/selftest_runner.py`. This job is green and must stay green. If it goes red, no result from the other job means anything.
+- **literal fidelity** runs `scripts/check_literal_fidelity.py --report-only`. Non-gating for now: it reports, and CI stays green whatever it says. See [Typed literals are compared by lexical form, not by value](#typed-literals-are-compared-by-lexical-form-not-by-value).
 - **fixture suite** runs every fixture, prints the whole report, then ratchets it against `KNOWN_FAILURES.json`. The suite itself is still red and the report still names all 28 failures; the job is green only while nothing has got worse and nothing has got better without the record being updated. See [What a green CI run means](#what-a-green-ci-run-means).
 
 ## Current status
@@ -489,7 +508,7 @@ The normalization algorithm follows **RDFC-1.0** (RDF Dataset Canonicalization):
 
 2. **Canonicalize blank nodes.** Apply the RDFC-1.0 algorithm (formerly URDNA2015) to assign deterministic identifiers to blank nodes. This ensures that blank node labels like `_:b0` and `_:b1` are assigned consistently based on the graph structure, not the order they appear in the serialization.
 
-3. **Sort triples.** Sort all quads lexicographically by (subject, predicate, object, graph). For URI terms, sort by the full URI string. For literals, sort by (value, datatype, language tag).
+3. **Sort triples.** Sort all quads lexicographically by (subject, predicate, object, graph). For URI terms, sort by the full URI string. For literals, sort by (**lexical form**, datatype, language tag) — the lexical form as written, never the parsed value. RDFC-1.0 canonicalises the N-Quads serialisation of each term, and RDF 1.1 literal equality is lexical. Sorting or comparing by value silently merges `"132"^^xsd:double` with `"132.0"^^xsd:double`, and `"2026-02-14T08:00:00Z"^^xsd:dateTime` with `"2026-02-14T08:00:00+00:00"^^xsd:dateTime`, which are distinct terms.
 
 4. **Normalize whitespace.** Remove trailing whitespace from each line. Normalize line endings to `\n`. Remove empty lines between triples.
 
@@ -497,10 +516,25 @@ The normalization algorithm follows **RDFC-1.0** (RDF Dataset Canonicalization):
 
 ### Reference Implementations
 
-- **JavaScript:** Use the `rdf-canonize` npm package (implements RDFC-1.0)
-- **Python:** Use `rdflib` with `rdflib.compare.isomorphic()` for graph comparison
+- **JavaScript:** Use the `rdf-canonize` npm package (implements RDFC-1.0), parsing with `n3`
+- **Python:** Use `rdflib` with `rdflib.compare.isomorphic()` for graph comparison — **but set `rdflib.NORMALIZE_LITERALS = False` first**, before any parse, or the comparison is made against rewritten literals (see below)
 - **Java:** Use Apache Jena's `IsoMatcher` for graph isomorphism
 - **Swift:** Parse with a Turtle parser and compare sorted triple sets
+
+#### Your parser must not rewrite lexical forms
+
+Step 1 says "any standards-compliant Turtle parser", and that is not quite enough: a parser may be standards-compliant about the *graph* it produces and still hand back literals whose lexical form it replaced with a canonical one. That is a real difference in the data — see [Typed literals are compared by lexical form, not by value](#typed-literals-are-compared-by-lexical-form-not-by-value) — and it is invisible until two implementations with different parsers compare the same pair of documents and disagree.
+
+Before trusting an `exact-match` result, check your parser against this document:
+
+```turtle
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+<https://e/s> <https://e/p> "132"^^xsd:double ;
+              <https://e/q> "1.2e2"^^xsd:double ;
+              <https://e/r> "2026-02-14T08:00:00Z"^^xsd:dateTime .
+```
+
+All three lexical forms must come back exactly as written. rdflib returns `"132.0"`, `"120.0"` and `"2026-02-14T08:00:00+00:00"` unless `rdflib.NORMALIZE_LITERALS` is set to `False`. `n3` (JavaScript) is faithful as shipped, verified at 2.7.4. `scripts/check_literal_fidelity.py` in this repository is the same test applied to the whole corpus.
 
 ### Example
 
