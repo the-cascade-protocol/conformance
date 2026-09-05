@@ -38,7 +38,16 @@ import sys
 import tempfile
 from pathlib import Path
 
+import rdflib
 from rdflib import BNode
+
+# One case here removes a shape at the RDF level and writes the result back into
+# a STAGED COPY of the spec checkout, so this file parses and re-serialises a
+# shapes graph. rdflib rewrites the lexical form of a typed literal on parse
+# unless this is off, which would leave the staged shapes differing from the real
+# ones in more than the one shape the test meant to remove. The runner disables
+# it for the same reason; see the comment in run_conformance.py.
+rdflib.NORMALIZE_LITERALS = False
 
 REPO = Path(__file__).resolve().parent.parent
 RUNNER = REPO / "scripts" / "run_conformance.py"
