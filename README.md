@@ -44,7 +44,7 @@ Every count below is derived from the fixture files themselves, not maintained b
 
 ### RDF fixtures (`fixtures/**/*.ttl`)
 
-71 further fixtures are Turtle files rather than JSON records. They carry their polarity in the filename and are executed by the same runner. There are **three** polarities:
+75 further fixtures are Turtle files rather than JSON records. They carry their polarity in the filename and are executed by the same runner. There are **three** polarities:
 
 | Suffix | Polarity | The claim |
 |---|---|---|
@@ -62,15 +62,15 @@ The third exists because Cascade shapes report a value that existing data alread
 | `genomics/fhir-genomics-ig/` | 7 | 7 | 0 | 0 | HL7 Genomics Reporting IG bundle conversion oracles |
 | `evidence/` | 7 | 3 | 4 | 0 | Assertion facet / evidence grounding rules (evidence v1-draft) |
 | `workbench/` | 7 | 4 | 3 | 0 | Filing, notes and follow-ups (workbench v1-draft) |
-| `health/` | 4 | 2 | 0 | 2 | The two `clinical:status` binding sets that `health.shapes.ttl` owns (`health` v2.8) |
+| `health/` | 8 | 3 | 0 | 5 | The two `clinical:status` binding sets that `health.shapes.ttl` owns (`health` v2.8), and the coded allergen, coded manifestation, allergy type and criticality it owns in `health` v2.9 / `clinical` v1.18 |
 | `genomics/clinvar/` | 4 | 4 | 0 | 0 | ClinVar VCV conversion oracles |
 | `advisory/` | 2 | 2 | 0 | 0 | Advisory reclassification oracles (advisory v1-draft) |
 | `coverage/` | 2 | 1 | 1 | 0 | `coverage:status` (`coverage` v1.5) |
 | `genomics/vcf/` | 1 | 1 | 0 | 0 | VCF conversion oracle |
 | `genomics/vrs/` | 1 | 1 | 0 | 0 | GA4GH VRS allele conversion oracle |
-| **Total** | **71** | **47** | **18** | **6** | |
+| **Total** | **75** | **48** | **18** | **9** | |
 
-**Grand total: 163 executable fixtures** (92 JSON + 71 Turtle), which is the number `scripts/run_conformance.py` reports on every run. The JSON table above had drifted from the files by seven — `absent-` was missing entirely and `lab-` and `proc-` were behind — and is corrected here against a run.
+**Grand total: 167 executable fixtures** (92 JSON + 75 Turtle), which is the number `scripts/run_conformance.py` reports on every run. The JSON table above had drifted from the files by seven — `absent-` was missing entirely and `lab-` and `proc-` were behind — and is corrected here against a run.
 
 A further 94 files under `fixtures/` are the source side of those conversion oracles (`*.input.xml`, `*.input.json`, `*.input.ldpatch`, `*.input.vcf.gz`), their `*.gaps.json` sidecars, and `INVENTORY.md` files. They carry no RDF of their own, so the SHACL runner does not execute them; each has a corresponding `*.expected.ttl` that it does execute. The runner reports them by category on every run so the number is auditable rather than assumed.
 
@@ -166,32 +166,38 @@ An SDK reading these fixtures inherits the same obligation. If your Turtle parse
 
 - **runner mutation tests** runs `scripts/selftest_runner.py`. This job is green and must stay green. If it goes red, no result from the other job means anything.
 - **literal fidelity** runs `scripts/check_literal_fidelity.py --report-only`. Non-gating for now: it reports, and CI stays green whatever it says. See [Typed literals are compared by lexical form, not by value](#typed-literals-are-compared-by-lexical-form-not-by-value).
-- **fixture suite** runs every fixture, prints the whole report, then ratchets it against `KNOWN_FAILURES.json`. The suite itself is still red and the report still names all 28 failures; the job is green only while nothing has got worse and nothing has got better without the record being updated. See [What a green CI run means](#what-a-green-ci-run-means).
+- **fixture suite** runs every fixture, prints the whole report, then ratchets it against `KNOWN_FAILURES.json`. The suite itself is still red and the report still names all 27 failures; the job is green only while nothing has got worse and nothing has got better without the record being updated. See [What a green CI run means](#what-a-green-ci-run-means).
 
 ## Current status
 
-As of the pinned revision in `scripts/SPEC_PIN` (`spec` at core 3.7, health 2.8, clinical 1.16, coverage 1.5, checkup 3.3):
+As of the pinned revision in `scripts/SPEC_PIN` (`spec` at core 3.8, health 2.9, clinical 1.18, coverage 1.6, checkup 3.3):
 
 ```
-passed  135
-failed   28
+passed  140
+failed   27
 skipped   0
-total   163        63,353 constraint checks evaluated
+total   167        63,543 constraint checks evaluated
 ```
+
+Two pin moves are folded into that block, and the failure count fell for the first
+one rather than this one. Moving to the core 3.8 / clinical 1.17 pin un-baselined
+`clinical/status-laboratoryreport-in-progress.WARN.ttl`, taking the failures 28 → 27
+and the passes 135 → 136 with the fixture set unchanged at 163. This pin then adds
+four fixtures and no failures, 136 → 140 and 163 → 167.
 
 The first execution of these fixtures, against the older `spec` revision the pin
 originally named, was **43 passed / 68 failed / 0 skipped / 111 total**. Three things
 moved it: 19 fixtures started passing on their own when `spec` defined and shaped the
 classes they had always asserted; 22 were fixed here; 50 were added. No fixture that
-passed has since failed. The remaining 28 break down as:
+passed has since failed. The remaining 27 break down as:
 
 | Reason | Count | Owned by | Notes |
 |---|---|---|---|
-| `VIOLATIONS` | 16 | `spec` (4), undecided (12) | Fifteen are conversion oracles under `fixtures/genomics/`; the sixteenth is `clinical/status-laboratoryreport-in-progress.WARN.ttl`, described under [A defect the v1.16 batch found](#a-defect-the-v116-batch-found) below. Each `.expected.ttl` records what the importer currently emits from the neighbouring `.input.json`, so a violation means either the importer must emit more or the shape must ask less. Three are settled — GA4GH Phenopackets do not carry a date of birth or a biological sex, so `cascade:PatientProfileShape` is stricter than the source format can satisfy. The other twelve need triage one at a time. |
+| `VIOLATIONS` | 15 | `spec` (3), undecided (12) | All fifteen are conversion oracles under `fixtures/genomics/`. The sixteenth entry this row used to carry, `clinical/status-laboratoryreport-in-progress.WARN.ttl`, was the defect described under [A defect the v1.16 batch found](#a-defect-the-v116-batch-found) below; clinical v1.17 fixed it and the entry is gone. Each `.expected.ttl` records what the importer currently emits from the neighbouring `.input.json`, so a violation means either the importer must emit more or the shape must ask less. Three are settled — GA4GH Phenopackets do not carry a date of birth or a biological sex, so `cascade:PatientProfileShape` is stricter than the source format can satisfy. The other twelve need triage one at a time. |
 | `UNSHAPED` | 9 | `spec` | A class a fixture asserts and no shape targets, so zero constraints run: `clinical:ImplantedDevice`, `clinical:MedicationAdministration`, `clinical:ImagingStudy`, `clinical:CoverageRecord`, `coverage:ClaimRecord`, `coverage:BenefitStatement`, `coverage:DenialNotice`, `ldp:BasicContainer` (`pod-001`, `pod-003`). **None of these is fixable in this repository**: the missing artefact is a shape in `spec`. `proc-001/002/003` left this row at core 3.6 / health 2.7 / clinical 1.15: they asserted `health:ProcedureRecord`, which `health.ttl` never defined, and clinical v1.15 ruled `clinical:` the canonical procedure spelling, so they were retargeted onto `clinical:Procedure` and all three now run against real constraints. |
 | `NO_TURTLE` | 3 | `conformance` | Comment-only placeholder `.ttl` files: two unauthored advisory oracles, and `genomics/phenopackets/biosamples-SAMN05324082.expected.ttl`, which is deliberately empty because it asserts `detect() === false` — not a SHACL assertion, so it needs a different home. |
 
-Each of the 28 is enumerated in [`KNOWN_FAILURES.json`](KNOWN_FAILURES.json) with the
+Each of the 27 is enumerated in [`KNOWN_FAILURES.json`](KNOWN_FAILURES.json) with the
 constraint it violates and the repo that owns the fix.
 
 ### A defect the v1.16 batch found

@@ -10,7 +10,23 @@
 # VOCAB_VERSIONS line below, run `make -C . conformance` (or
 # `scripts/run_conformance.py`), and record the resulting counts in the PR.
 
-# Pinned at the MERGE commit of the-cascade-protocol/spec PR #32 on `main`
+# DRAFT PIN — NOT A MERGE COMMIT. This points at the head of the spec branch
+# feat/health-2.9-coded-allergy (health v2.9 / clinical v1.18), which is not on
+# `main` yet. It MUST be re-pinned to that PR's merge commit, and the counts
+# re-measured, before this conformance PR leaves draft. Until then the pin names
+# a commit a fresh clone of spec cannot resolve.
+#
+# WHAT MOVING THE PIN DOES: four fixtures are added and four verdicts change,
+# all of them the new ones. health/coded-allergy-penicillin.VALID passes at both
+# the previous pin and this one (the release is strictly widening, so passing is
+# not what proves it); its constraint check count goes 28 -> 36, which is the
+# four new property shapes on health:AllergyRecordShape actually evaluating. The
+# three .WARN fixtures report NO_WARNING at the previous pin — nothing notices
+# them, because none of the four constraints exists there — and pass here. No
+# pre-existing fixture changes verdict or reason, which is the release's
+# "additive and strictly widening" claim measured rather than quoted.
+#
+# Previously pinned at the MERGE commit of the-cascade-protocol/spec PR #32 on `main`
 # (core v3.8 / health v2.8 / clinical v1.17 / coverage v1.6; tags
 # `vocab/core-v3.8`, `vocab/clinical-v1.17`, `vocab/coverage-v1.6` point at
 # this commit; `vocab/health-v2.8` remains on the previous pin).
@@ -32,5 +48,5 @@
 # Re-measured at this commit: see the PR for counts.
 
 repo=https://github.com/the-cascade-protocol/spec
-commit=9b13ae4a769802b9232e7cf2c5b5358f1c115c40
-vocab=core=3.8 health=2.8 clinical=1.17 coverage=1.6 checkup=3.3 pots=1.4
+commit=0d07adee2c95367d36db57449783c893e8499bee
+vocab=core=3.8 health=2.9 clinical=1.18 coverage=1.6 checkup=3.3 pots=1.4

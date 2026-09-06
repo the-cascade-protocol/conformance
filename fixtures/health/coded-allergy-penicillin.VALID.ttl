@@ -1,0 +1,69 @@
+# health v2.9 — the coded allergy record, whole.
+#
+# WHAT THIS FIXTURE IS FOR. Through health v2.8 an allergy record could name its
+# substance and its manifestations only as display text, so a converter reading
+# a FHIR AllergyIntolerance had nowhere to put code.coding or
+# reaction.manifestation.coding and dropped both. The IPS AllergyIntolerance
+# profile makes AllergyIntolerance.code 1..1 must-support and marks
+# reaction.manifestation must-support, so a record that carries neither cannot
+# be exported into an International Patient Summary at all.
+#
+# This record carries every element of that repair at once, because the point is
+# that the four facts coexist on one node rather than that each parses alone:
+#
+#   health:allergenCode        one RxNorm IRI, beside the display text in
+#                              health:allergen. RxNorm rather than SNOMED CT on
+#                              purpose: the vocabulary imposes no lexical
+#                              pattern precisely so that RxNorm, SNOMED CT and
+#                              UNII identifiers, which share no format, are all
+#                              writable. A fixture that only ever used SNOMED
+#                              would not exercise that.
+#   health:manifestationCode   TWO SNOMED CT IRIs, with TWO matching
+#                              health:reaction literals, ONE PER MANIFESTATION.
+#                              This is the shape of the data the vocabulary now
+#                              says is correct, against the joined
+#                              comma-separated literal a converter used to emit;
+#                              nothing here would fail if the two were joined,
+#                              which is exactly why the correct form is written
+#                              down as a fixture rather than left to a comment.
+#   health:allergySeverity     "severe" — what the OBSERVED reaction was
+#                              (AllergyIntolerance.reaction.severity).
+#   clinical:criticality       "high" — the risk a FUTURE exposure carries
+#                              (AllergyIntolerance.criticality).
+#
+# THE LAST TWO ARE THE LOAD-BEARING PAIR. They are different value sets on
+# different axes and they sit on the record together here for the same reason
+# the sibling status fixture carries clinical:status and
+# clinical:verificationStatus together: to show that the two are separate
+# elements and not one fact spelled twice. A converter that folds criticality
+# into severity when no reaction severity is present destroys both, because a
+# reader given one stored value cannot afterwards tell which question it
+# answers. This record answers both.
+#
+# clinical:allergyType "allergy" carries AllergyIntolerance.type. Both
+# clinical: predicates are written on a health:AllergyRecord, which is what
+# clinical v1.18 dropping their rdfs:domain clinical:Allergy is for.
+#
+# Fully synthetic. No such patient exists.
+
+@prefix cascade: <https://ns.cascadeprotocol.org/core/v1#> .
+@prefix clinical: <https://ns.cascadeprotocol.org/clinical/v1#> .
+@prefix health: <https://ns.cascadeprotocol.org/health/v1#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<urn:uuid:a11e0209-0000-4000-8000-000000000001> a health:AllergyRecord ;
+    health:allergen "Penicillin G" ;
+    health:allergenCode <http://www.nlm.nih.gov/research/umls/rxnorm/7980> ;
+    health:allergyCategory "medication" ;
+    health:reaction "Hives" ;
+    health:reaction "Dyspnea" ;
+    health:manifestationCode <http://snomed.info/sct/247472004> ;
+    health:manifestationCode <http://snomed.info/sct/267036007> ;
+    health:allergySeverity "severe" ;
+    clinical:criticality "high" ;
+    clinical:allergyType "allergy" ;
+    clinical:status "active" ;
+    clinical:verificationStatus "confirmed" ;
+    clinical:sourceEHR "Meridian Health System" ;
+    cascade:dataProvenance cascade:EHRVerified ;
+    cascade:schemaVersion "1.4" .
