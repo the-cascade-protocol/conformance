@@ -28,8 +28,8 @@ python3 scripts/check_literal_fidelity.py
 ```
 
 Against the revision in `scripts/SPEC_PIN` (`spec` at core 3.8 / health 2.9 /
-clinical 1.18 / coverage 1.6), which is what CI executes: **140 passed / 27
-failed / 0 skipped / 167 total**, 63,543 constraint checks, and all 27 are
+clinical 1.19 / coverage 1.6), which is what CI executes: **146 passed / 27
+failed / 0 skipped / 173 total**, 63,899 constraint checks, and all 27 are
 enumerated in `KNOWN_FAILURES.json`, so the ratchet holds and the job is green.
 
 The result depends on which `spec` revision you point it at, so **always say which**,

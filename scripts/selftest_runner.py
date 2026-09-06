@@ -338,20 +338,32 @@ def case_warn_fixture_that_violates_is_caught(spec_dir, tmp):
 def case_absent_shape_is_not_a_pass(spec_dir, tmp):
     """The standing review question, executed.
 
-    Delete the shape that constrains the fixture and re-run. If the runner still
+    Delete EVERY shape that reaches the fixture and re-run. If the runner still
     said PASS, every green result in this suite would be meaningless.
+
+    Both shapes have to go, and which ones they are is a property of the fixture
+    rather than of the runner. med-001.json is a clinical:Medication, so
+    clinical:MedicationShape reaches it by sh:targetClass; it also carries
+    health:startDate, so clinical:MedicationDateSpellingShape (clinical v1.19)
+    reaches it by sh:targetSubjectsOf. Removing only the first leaves one shape
+    still matching, so the runner reports PASS at a non-zero check count and is
+    CORRECT to: constraints did run. Stripping one shape and asserting UNSHAPED
+    would be asserting something false about the fixture, so the mutation strips
+    both and the case keeps meaning what it says.
     """
-    def strip_medication_shape(dest: Path):
-        # Remove the shape at the RDF level rather than by text surgery: the
-        # shape spans blank lines, so cutting on whitespace leaves broken Turtle
+    def strip_medication_shapes(dest: Path):
+        # Remove the shapes at the RDF level rather than by text surgery: they
+        # span blank lines, so cutting on whitespace leaves broken Turtle
         # and the run aborts for the wrong reason.
         from rdflib import Graph, URIRef
 
         path = dest / "ontologies" / "clinical" / "v1" / "clinical.shapes.ttl"
         graph = Graph()
         graph.parse(path, format="turtle")
-        shape = URIRef("https://ns.cascadeprotocol.org/clinical/v1#MedicationShape")
-        pending = [shape]
+        pending = [
+            URIRef("https://ns.cascadeprotocol.org/clinical/v1#MedicationShape"),
+            URIRef("https://ns.cascadeprotocol.org/clinical/v1#MedicationDateSpellingShape"),
+        ]
         seen = set()
         while pending:
             node = pending.pop()
@@ -365,13 +377,13 @@ def case_absent_shape_is_not_a_pass(spec_dir, tmp):
         path.write_text(graph.serialize(format="turtle"), encoding="utf-8")
 
     fixtures = stage_fixture(tmp, POSITIVE_FIXTURE, companion=COMPANION_FIXTURE)
-    spec_copy = stage_spec(tmp, spec_dir, strip_medication_shape)
+    spec_copy = stage_spec(tmp, spec_dir, strip_medication_shapes)
     code, payload, _ = run_runner(spec_copy, fixtures)
     entry = result_for(payload, POSITIVE_FIXTURE)
     if entry["outcome"] == "pass":
         raise SelfTestFailure(
-            "removing clinical:MedicationShape still produced PASS. The runner is "
-            "reporting conformance it never checked."
+            "removing every shape that reaches the fixture still produced PASS. "
+            "The runner is reporting conformance it never checked."
         )
     if entry["reason"] != "UNSHAPED" or entry["constraintChecks"] != 0:
         raise SelfTestFailure(
@@ -380,7 +392,7 @@ def case_absent_shape_is_not_a_pass(spec_dir, tmp):
         )
     if code == 0:
         raise SelfTestFailure("runner exited 0 with an unshaped fixture")
-    return "shape removed -> UNSHAPED (0 checks), not PASS"
+    return "both reaching shapes removed -> UNSHAPED (0 checks), not PASS"
 
 
 def case_unparseable_fixture_is_an_error(spec_dir, tmp):

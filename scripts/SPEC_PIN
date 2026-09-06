@@ -11,20 +11,35 @@
 # `scripts/run_conformance.py`), and record the resulting counts in the PR.
 
 # DRAFT PIN — NOT A MERGE COMMIT. This points at the head of the spec branch
-# feat/health-2.9-coded-allergy (health v2.9 / clinical v1.18), which is not on
-# `main` yet. It MUST be re-pinned to that PR's merge commit, and the counts
-# re-measured, before this conformance PR leaves draft. Until then the pin names
-# a commit a fresh clone of spec cannot resolve.
+# feat/clinical-1.19-medication-dates (clinical v1.19 / health.shapes.ttl v1.7),
+# which is itself STACKED on the unmerged branch feat/health-2.9-coded-allergy
+# and is not on `main` yet. It MUST be re-pinned to that PR's merge commit, and
+# the counts re-measured, before this conformance PR leaves draft. Until then the
+# pin names a commit a fresh clone of spec cannot resolve, and the previous draft
+# pin it replaces was in the same position.
 #
-# WHAT MOVING THE PIN DOES: four fixtures are added and four verdicts change,
-# all of them the new ones. health/coded-allergy-penicillin.VALID passes at both
-# the previous pin and this one (the release is strictly widening, so passing is
-# not what proves it); its constraint check count goes 28 -> 36, which is the
-# four new property shapes on health:AllergyRecordShape actually evaluating. The
-# three .WARN fixtures report NO_WARNING at the previous pin — nothing notices
-# them, because none of the four constraints exists there — and pass here. No
-# pre-existing fixture changes verdict or reason, which is the release's
-# "additive and strictly widening" claim measured rather than quoted.
+# WHAT MOVING THE PIN DOES: six fixtures are added and six verdicts change, all
+# of them the new ones. Full suite 140 passed / 27 failed / 0 skipped / 167 total
+# at the previous pin, 146 / 27 / 0 / 173 here. NOT ONE PRE-EXISTING FIXTURE
+# CHANGES VERDICT OR REASON — compared entry by entry across both runs, 0 of 167
+# differ — which is the release's "additive and strictly widening" claim measured
+# rather than quoted. Constraint checks 63,543 -> 63,899.
+#
+# The four .WARN fixtures report NO_WARNING at the previous pin (medication 55
+# checks each, condition 21 each): they are shaped, and nothing notices them,
+# because none of the six constraints exists there. They pass here at 59 / 61 /
+# 26 / 28. The two .VALID fixtures pass at BOTH pins, so passing is not what
+# proves them; their constraint counts going 55 -> 59 and 21 -> 26 is the new
+# property shapes actually evaluating.
+#
+# ONE MEASUREMENT WORTH RECORDING SEPARATELY, because it is evidence about the
+# corpus rather than about the new fixtures. Seven pre-existing JSON fixtures
+# (med-001 through med-007) already carried health:startDate, and med-007 also
+# health:endDate. At this pin each of them reports one new sh:Warning (med-007
+# two) from clinical:MedicationDateSpellingShape, and every one still PASSES,
+# because a positive fixture is defined by the absence of sh:Violation. So the
+# defect clinical v1.19 describes was already sitting in this repository's own
+# corpus, unnoticed by anything, and the release is the first thing to see it.
 #
 # Previously pinned at the MERGE commit of the-cascade-protocol/spec PR #32 on `main`
 # (core v3.8 / health v2.8 / clinical v1.17 / coverage v1.6; tags
@@ -48,5 +63,5 @@
 # Re-measured at this commit: see the PR for counts.
 
 repo=https://github.com/the-cascade-protocol/spec
-commit=0d07adee2c95367d36db57449783c893e8499bee
-vocab=core=3.8 health=2.9 clinical=1.18 coverage=1.6 checkup=3.3 pots=1.4
+commit=6b34e9431a2ca1fe14d36be72a4236410e408ce6
+vocab=core=3.8 health=2.9 clinical=1.19 coverage=1.6 checkup=3.3 pots=1.4
