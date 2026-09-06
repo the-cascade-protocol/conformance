@@ -1,0 +1,57 @@
+# clinical v1.19 — the declared medication effective dates, both precisions on
+# one record.
+#
+# WHAT THIS FIXTURE IS FOR. Through clinical v1.18 a medication's effective
+# period had a declared home (clinical:startDate and clinical:endDate exist and
+# always have) and no shape that named either, while a reference import path
+# wrote the dates to health:startDate and health:endDate instead — predicates no
+# Cascade vocabulary defines. So the only supplier for FHIR R4
+# MedicationStatement.effective[x], which the IPS MedicationStatement profile
+# makes 1..1 must-support, was a pair of predicates nothing constrained and no
+# context mapped. This record is the correct form written down.
+#
+# BOTH PRECISIONS ARE EXERCISED, ON PURPOSE, AND THAT IS THE POINT OF THE
+# FIXTURE. The property shapes are an sh:or over xsd:date and xsd:dateTime, the
+# same form health:onsetDate already uses, because FHIR's dateTime primitive
+# permits date precision (YYYY, YYYY-MM, YYYY-MM-DD). A source that recorded
+# only a calendar day must not be given an invented midnight, and a source that
+# recorded an instant must not be truncated to a day.
+#
+#   clinical:startDate   "2024-03-11"^^xsd:date
+#                        the ordinary case: a prescription start recorded as a
+#                        calendar day, which is what effectivePeriod.start
+#                        carries in nearly every real export. Written as
+#                        xsd:date rather than as a midnight xsd:dateTime, so a
+#                        shape that accepted only xsd:dateTime would fail here.
+#   clinical:endDate     "2025-01-15T09:30:00Z"^^xsd:dateTime
+#                        the instant case: a discontinuation timestamped by the
+#                        system that recorded it. A shape that accepted only
+#                        xsd:date would fail here.
+#
+# A fixture carrying two dates of the SAME precision would pass under a shape
+# that had picked either branch alone, and would prove nothing about the sh:or.
+# This one fails unless both branches are present.
+#
+# The health: spellings are deliberately ABSENT from this record: it is the
+# canonical form, and its sibling medication-dates-health-spelling.WARN.ttl is
+# the one that carries them.
+#
+# Fully synthetic. No such patient, prescriber or record exists.
+
+@prefix cascade: <https://ns.cascadeprotocol.org/core/v1#> .
+@prefix clinical: <https://ns.cascadeprotocol.org/clinical/v1#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<urn:uuid:med0119-0000-4000-8000-000000000001> a clinical:Medication ;
+    clinical:drugName "Lisinopril" ;
+    clinical:dosage "20 mg" ;
+    clinical:frequency "once daily" ;
+    clinical:route "oral" ;
+    clinical:status "completed" ;
+    clinical:startDate "2024-03-11"^^xsd:date ;
+    clinical:endDate "2025-01-15T09:30:00Z"^^xsd:dateTime ;
+    clinical:rxNormCode <http://www.nlm.nih.gov/research/umls/rxnorm/197884> ;
+    clinical:prescriber "Dr. Amara Osei" ;
+    clinical:sourceEHR "Meridian Health System" ;
+    cascade:dataProvenance cascade:EHRVerified ;
+    cascade:schemaVersion "1.4" .

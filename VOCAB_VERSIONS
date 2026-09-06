@@ -180,7 +180,42 @@ health=2.9
 #   Note: health:SocialHistoryRecordShape declares only sh:Info-severity constraints,
 #   so no fixture can be rejected by it and the health: spelling has no negative
 #   counterpart. social-003 covers the clinical: spelling instead.
-clinical=1.18
+clinical=1.19
+# clinical=1.19: NO new term. One rdfs:domain clinical:Condition DROPPED, from
+#   clinical:abatementDate, so it can be written on health:ConditionRecord.
+#   Four comment rewrites naming the canonical spellings. Neither the domain
+#   removal nor a comment is a SHACL constraint, so no fixture asserts either
+#   directly; what the fixtures exercise is the six shape constraints the
+#   release adds. clinical:MedicationShape declares clinical:startDate and
+#   clinical:endDate (sh:or over xsd:date / xsd:dateTime, sh:maxCount 1) and the
+#   new clinical:MedicationDateSpellingShape warns on health:startDate and
+#   health:endDate; health.shapes.ttl v1.7 declares clinical:abatementDate and
+#   clinical:category on health:ConditionRecordShape and adds
+#   health:ConditionSpellingShape. health stays at 2.9 and health.ttl is
+#   untouched: the ruling is that the declared clinical: spellings win, so no
+#   health: term is minted.
+#   Fixtures: clinical/medication-dates-lisinopril.VALID (an xsd:date start AND
+#   an xsd:dateTime end on one record, so a shape that had picked either branch
+#   of the sh:or alone would fail), clinical/medication-dates-health-spelling
+#   .WARN (the importer's current output; two warnings, no violation),
+#   clinical/medication-dates-string.WARN ("March 2024" as a plain literal),
+#   health/condition-abatement-category.VALID, health/condition-health-spelling
+#   .WARN and health/condition-category-diagnosis.WARN ("diagnosis" is the C-CDA
+#   problem-observation word, not an R4 category code, which is the confusion
+#   the binding exists to catch).
+#   All four WARN fixtures measured NO_WARNING against clinical 1.18, at 55
+#   (medication) and 21 (condition) constraint checks each; they pass here. The
+#   two VALID fixtures pass at both pins, and their counts going 55 -> 59 and
+#   21 -> 26 is what shows the new property shapes evaluating.
+#   ALSO MEASURED, and it is evidence about the corpus rather than the fixtures:
+#   med-001 through med-007 already carried health:startDate (med-007 also
+#   health:endDate) and now each reports the spelling warning while still
+#   passing. The defect was in this repository's own fixtures and nothing could
+#   see it before this release.
+#   NOT COVERED, deliberately: month precision. FHIR permits a YYYY-MM date and
+#   xsd:date does not admit one, so neither branch of the sh:or has a lossless
+#   literal for it. The .WARN fixture records the limit; no fixture can assert a
+#   form that has no legal spelling.
 # clinical=1.18: NO new term. Two rdfs:domain clinical:Allergy declarations
 #   DROPPED, from clinical:allergyType and clinical:criticality, so both can be
 #   written on health:AllergyRecord. Like the two domains v1.16 dropped, this is

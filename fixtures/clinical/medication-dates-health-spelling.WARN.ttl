@@ -1,0 +1,54 @@
+# clinical v1.19 — WARNING. The medication effective dates written under the
+# undefined health: spellings.
+#
+# WHY THIS EXACT RECORD. This is not an invented mistake; it is what the
+# reference import path emits today, byte for byte in structure. It types the
+# record clinical:Medication and then writes the effective period to
+# health:startDate and health:endDate, two predicates the health vocabulary does
+# not define and no shape targeted. The result was a record that CARRIES its
+# effective period on a predicate validated by nothing, while the declared
+# clinical:startDate and clinical:endDate sat unused — the clinical v1.15
+# procedureName defect, in two more places.
+#
+# WHAT THIS FIXTURE ASSERTS, AND WHAT IT DELIBERATELY DOES NOT. It asserts that
+# clinical:MedicationDateSpellingShape NOTICES both predicates: two sh:Warning
+# results, one per spelling. It asserts equally that NOTHING REJECTS the record.
+# That second half is the whole compatibility claim of the release: unlike
+# clinical:procedureName, whose shape required a name and therefore needed an
+# sh:or window to stop failing records that carried one, these dates are
+# OPTIONAL at the shape level. No pod fails today for carrying the health:
+# spelling and none will. The warning is the entire migration window.
+#
+# The record carries NO clinical: date, which is what a converter that has not
+# yet been changed produces. A record carrying both spellings would warn too,
+# but it would not be evidence about the converter's current output.
+#
+# THIS FIXTURE IS WHAT CLOSES THE WINDOW. clinical v1.19 says the spelling
+# shapes are removed once the warning is observably absent from conforming
+# output. Until the cascade-cli converter writes the clinical: spellings, this
+# fixture warns; when the window closes it must be retired in the same commit
+# that removes the shape, and its continuing to warn is the record that the
+# window is still open.
+#
+# Fully synthetic. Same drug and dosage as
+# medication-dates-lisinopril.VALID.ttl, differing in the predicate and nothing
+# else, so the two records are comparable term for term.
+
+@prefix cascade: <https://ns.cascadeprotocol.org/core/v1#> .
+@prefix clinical: <https://ns.cascadeprotocol.org/clinical/v1#> .
+@prefix health: <https://ns.cascadeprotocol.org/health/v1#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<urn:uuid:med0119-0000-4000-8000-000000000002> a clinical:Medication ;
+    clinical:drugName "Lisinopril" ;
+    clinical:dosage "20 mg" ;
+    clinical:frequency "once daily" ;
+    clinical:route "oral" ;
+    clinical:status "completed" ;
+    health:startDate "2024-03-11"^^xsd:date ;
+    health:endDate "2025-01-15T09:30:00Z"^^xsd:dateTime ;
+    clinical:rxNormCode <http://www.nlm.nih.gov/research/umls/rxnorm/197884> ;
+    clinical:prescriber "Dr. Amara Osei" ;
+    clinical:sourceEHR "Meridian Health System" ;
+    cascade:dataProvenance cascade:EHRVerified ;
+    cascade:schemaVersion "1.4" .

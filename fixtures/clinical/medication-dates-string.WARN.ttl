@@ -1,0 +1,48 @@
+# clinical v1.19 — WARNING. A medication start date carried as a plain string.
+#
+# WHY THIS EXACT VALUE. "March 2024" is not gibberish and it is not a typo. It
+# is what a source that recorded a MONTH produces when a converter has nowhere
+# to put month precision and falls back to copying the display text through.
+# FHIR's dateTime primitive permits exactly that precision — YYYY, YYYY-MM,
+# YYYY-MM-DD are all legal — so the fact being carried here is real and the
+# defect is purely that it is stated as text rather than as a date.
+#
+# That is the value worth catching, and it is why the fixture does not use a
+# malformed date such as "2024-13-45". A malformed date would fail the
+# xsd:date branch on its lexical form and prove only that a datatype constraint
+# is a datatype constraint. A plain string proves the constraint is reached at
+# all: through clinical v1.18 clinical:MedicationShape named neither date, so a
+# start date of any shape whatsoever was accepted in silence, and this record
+# would have passed while carrying a date no consumer could compare, sort or
+# export.
+#
+# THE CORRECT SPELLING FOR THIS FACT is "2024-03"^^xsd:date... which xsd:date
+# does not admit, and that is a real limit worth recording rather than hiding:
+# XSD dates require full YYYY-MM-DD, so a month-precision FHIR date has no
+# lossless literal form in either branch of the sh:or. A converter facing this
+# must either state the day it actually knows or carry the value as source text
+# in a separate predicate; what it must not do is invent 2024-03-01 and present
+# a guess as a recorded fact. The sibling VALID fixture shows the two precisions
+# that ARE representable.
+#
+# sh:Warning, not sh:Violation, per the core v3.5 ratchet: this is the first
+# release to constrain clinical:startDate on any shape and pods may already
+# carry it in any form. Nothing rejects this record, and the fixture asserts
+# exactly that alongside the warning.
+#
+# Fully synthetic.
+
+@prefix cascade: <https://ns.cascadeprotocol.org/core/v1#> .
+@prefix clinical: <https://ns.cascadeprotocol.org/clinical/v1#> .
+
+<urn:uuid:med0119-0000-4000-8000-000000000003> a clinical:Medication ;
+    clinical:drugName "Metformin" ;
+    clinical:dosage "500 mg" ;
+    clinical:frequency "twice daily" ;
+    clinical:route "oral" ;
+    clinical:status "active" ;
+    clinical:startDate "March 2024" ;
+    clinical:prescriber "Dr. Amara Osei" ;
+    clinical:sourceEHR "Meridian Health System" ;
+    cascade:dataProvenance cascade:EHRVerified ;
+    cascade:schemaVersion "1.4" .
