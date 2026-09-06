@@ -1,0 +1,38 @@
+# health v2.9 — WARNING. "sensitivity" written to clinical:allergyType.
+#
+# WHY THIS EXACT VALUE. FHIR R4 AllergyIntolerance.type has a REQUIRED binding
+# to exactly two codes, allergy | intolerance, and "sensitivity" is the word a
+# patient portal or an intake form routinely prints for both of them. It is not
+# a typo and not gibberish: it is the plausible third word, the one a converter
+# would pass through unexamined because it reads as a synonym, and the one that
+# collapses the distinction the element exists to make. An immune-mediated
+# allergy and a non-immune intolerance are different mechanisms with different
+# consequences, and a record that says "sensitivity" has stated neither.
+#
+# The other reason for this value rather than a two-code near-miss: the set has
+# only two members, so any fixture at all proves the binding is enumerated. What
+# a plausible third word proves additionally is that the binding was narrowed to
+# two BY the FHIR required binding rather than by an author who did not think of
+# a third case.
+#
+# sh:Warning, not sh:Violation, per the core v3.5 ratchet: this is the first
+# release to bind clinical:allergyType on any shape. Nothing rejects this
+# record, and the fixture asserts exactly that alongside the warning.
+#
+# Fully synthetic.
+
+@prefix cascade: <https://ns.cascadeprotocol.org/core/v1#> .
+@prefix clinical: <https://ns.cascadeprotocol.org/clinical/v1#> .
+@prefix health: <https://ns.cascadeprotocol.org/health/v1#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<urn:uuid:a11e0209-0000-4000-8000-000000000003> a health:AllergyRecord ;
+    health:allergen "Lactose" ;
+    health:allergenCode <http://snomed.info/sct/47703008> ;
+    health:allergyCategory "food" ;
+    health:reaction "Abdominal bloating" ;
+    clinical:allergyType "sensitivity" ;
+    clinical:status "active" ;
+    clinical:sourceEHR "Meridian Health System" ;
+    cascade:dataProvenance cascade:EHRVerified ;
+    cascade:schemaVersion "1.4" .

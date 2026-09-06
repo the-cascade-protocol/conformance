@@ -1,0 +1,42 @@
+# health v2.9 — WARNING. "moderate" written to clinical:criticality.
+#
+# WHY THIS EXACT VALUE, AND NOT A NONSENSE STRING. "moderate" is a real code and
+# it is legal on this very record: health:allergySeverity binds
+# AllergyIntolerance.reaction.severity to mild | moderate | severe, and
+# "moderate" is the middle member of that set. It is NOT in
+# AllergyIntolerance.criticality, which is low | high | unable-to-assess.
+#
+# So this fixture is not testing that a shape rejects gibberish. It is testing
+# the one confusion the release exists to prevent: criticality and reaction
+# severity are two axes with two value sets, and the value that gives them away
+# is the one that is correct on the other axis. A converter that folds
+# AllergyIntolerance.criticality into health:allergySeverity -- the behaviour
+# health v2.9 documents against -- produces exactly this record when it runs the
+# fold backwards, and nothing before this binding existed would have noticed.
+#
+# It is also what fails if someone later "harmonises" the two sets by admitting
+# mild | moderate | severe here, which would make the two predicates
+# interchangeable and the distinction unrecoverable.
+#
+# sh:Warning, not sh:Violation, per the core v3.5 ratchet: this is the first
+# release to bind clinical:criticality on any shape and pods may already carry
+# it. Nothing rejects this record, and the fixture asserts exactly that
+# alongside the warning.
+#
+# Fully synthetic.
+
+@prefix cascade: <https://ns.cascadeprotocol.org/core/v1#> .
+@prefix clinical: <https://ns.cascadeprotocol.org/clinical/v1#> .
+@prefix health: <https://ns.cascadeprotocol.org/health/v1#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<urn:uuid:a11e0209-0000-4000-8000-000000000002> a health:AllergyRecord ;
+    health:allergen "Penicillin G" ;
+    health:allergenCode <http://www.nlm.nih.gov/research/umls/rxnorm/7980> ;
+    health:allergyCategory "medication" ;
+    health:reaction "Hives" ;
+    clinical:criticality "moderate" ;
+    clinical:status "active" ;
+    clinical:sourceEHR "Meridian Health System" ;
+    cascade:dataProvenance cascade:EHRVerified ;
+    cascade:schemaVersion "1.4" .
