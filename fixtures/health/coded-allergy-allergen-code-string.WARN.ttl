@@ -1,0 +1,44 @@
+# health v2.9 — WARNING. health:allergenCode carrying a STRING LITERAL where an
+# IRI belongs.
+#
+# WHY A LITERAL AND NOT A WRONG IRI. health:allergenCode carries no sh:pattern
+# and no sh:maxCount, deliberately: SNOMED CT identifiers, RxNorm concept
+# identifiers and UNII codes have unrelated lexical formats, so any pattern
+# would reject valid codes, and CodeableConcept.coding is 0..* so any maxCount
+# would reject dual coding. sh:nodeKind sh:IRI is therefore the ONLY constraint
+# the property carries, and a bare literal is the only thing that can violate
+# it. A fixture using a malformed IRI would assert nothing, because the shape
+# does not inspect an IRI's shape and must not.
+#
+# This is also the realistic failure rather than an invented one. A converter
+# reading FHIR sees code.coding[].code as a JSON string, "7980", and the whole
+# work of emitting this property is joining that string to code.coding[].system
+# to build the code system's IRI. Skipping that join is the natural mistake, and
+# it produces exactly this record: a value that looks like the code, in the
+# right predicate, that no consumer can resolve or join against any other
+# vocabulary. The record still has its display text, so nothing about it reads
+# as broken.
+#
+# sh:Warning, not sh:Violation, per the core v3.5 ratchet: this is the first
+# release in which health:allergenCode exists at all. Nothing rejects this
+# record, and the fixture asserts exactly that alongside the warning.
+#
+# Fully synthetic.
+
+@prefix cascade: <https://ns.cascadeprotocol.org/core/v1#> .
+@prefix clinical: <https://ns.cascadeprotocol.org/clinical/v1#> .
+@prefix health: <https://ns.cascadeprotocol.org/health/v1#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<urn:uuid:a11e0209-0000-4000-8000-000000000004> a health:AllergyRecord ;
+    health:allergen "Penicillin G" ;
+    health:allergenCode "7980" ;
+    health:allergyCategory "medication" ;
+    health:reaction "Hives" ;
+    health:allergySeverity "severe" ;
+    clinical:criticality "high" ;
+    clinical:allergyType "allergy" ;
+    clinical:status "active" ;
+    clinical:sourceEHR "Meridian Health System" ;
+    cascade:dataProvenance cascade:EHRVerified ;
+    cascade:schemaVersion "1.4" .

@@ -7,7 +7,7 @@ Downstream SDKs (sdk-typescript, sdk-python) and tools (cascade-cli) must pass a
 
 ## Key Architecture
 
-- `fixtures/` — JSON fixture files, one per record instance. Named `{type}-{id}.json`. Also 71 `.ttl` fixtures in subdirectories, with polarity in the filename. **Three** polarities: `*.VALID.ttl` (or no suffix) must produce no `sh:Violation`; `*.INVALID.ttl` must produce at least one; `*.WARN.ttl` must produce at least one `sh:Warning` **and** no `sh:Violation`. The third exists because Cascade shapes report a value existing data already carries at `sh:Warning` rather than rejecting it (the `core` v3.5 ratchet, applied by `clinical` v1.16 to five `clinical:status` bindings), and neither of the other two polarities can state that claim: `.INVALID.ttl` fails such a fixture with `NO_WARNING`'s sibling `NO_VIOLATION`, and `.VALID.ttl` passes it while asserting nothing about the warning.
+- `fixtures/` — JSON fixture files, one per record instance. Named `{type}-{id}.json`. Also 75 `.ttl` fixtures in subdirectories, with polarity in the filename. **Three** polarities: `*.VALID.ttl` (or no suffix) must produce no `sh:Violation`; `*.INVALID.ttl` must produce at least one; `*.WARN.ttl` must produce at least one `sh:Warning` **and** no `sh:Violation`. The third exists because Cascade shapes report a value existing data already carries at `sh:Warning` rather than rejecting it (the `core` v3.5 ratchet, applied by `clinical` v1.16 to five `clinical:status` bindings), and neither of the other two polarities can state that claim: `.INVALID.ttl` fails such a fixture with `NO_WARNING`'s sibling `NO_VIOLATION`, and `.VALID.ttl` passes it while asserting nothing about the warning.
 - `schema/fixture-schema.json` — JSON Schema for the fixture format (includes `dataType` enum).
 - `scripts/run_conformance.py` — executes every fixture against the SHACL shapes from a pinned `spec` checkout. `scripts/SPEC_PIN` names the commit.
 - `scripts/selftest_runner.py` — mutation tests proving the runner can fail.
@@ -27,9 +27,9 @@ python3 scripts/check_baseline.py --results results.json
 python3 scripts/check_literal_fidelity.py
 ```
 
-Against the revision in `scripts/SPEC_PIN` (`spec` at core 3.7 / health 2.8 /
-clinical 1.16 / coverage 1.5), which is what CI executes: **135 passed / 28
-failed / 0 skipped / 163 total**, 63,353 constraint checks, and all 28 are
+Against the revision in `scripts/SPEC_PIN` (`spec` at core 3.8 / health 2.9 /
+clinical 1.18 / coverage 1.6), which is what CI executes: **140 passed / 27
+failed / 0 skipped / 167 total**, 63,543 constraint checks, and all 27 are
 enumerated in `KNOWN_FAILURES.json`, so the ratchet holds and the job is green.
 
 The result depends on which `spec` revision you point it at, so **always say which**,
