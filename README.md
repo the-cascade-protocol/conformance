@@ -44,7 +44,7 @@ Every count below is derived from the fixture files themselves, not maintained b
 
 ### RDF fixtures (`fixtures/**/*.ttl`)
 
-75 further fixtures are Turtle files rather than JSON records. They carry their polarity in the filename and are executed by the same runner. There are **three** polarities:
+81 further fixtures are Turtle files rather than JSON records. They carry their polarity in the filename and are executed by the same runner. There are **three** polarities:
 
 | Suffix | Polarity | The claim |
 |---|---|---|
@@ -57,20 +57,20 @@ The third exists because Cascade shapes report a value that existing data alread
 | Directory | Count | Positive | Negative | Warn | What it covers |
 |---|---|---|---|---|---|
 | `core/` | 15 | 6 | 8 | 1 | AIExtracted provenance; the `core` v3.5 ORIGIN axis (`cascade:sourceIdentity`); and the `core` v3.7 `cascade:Attachment` store — one negative per Violation constraint, three path/digest negatives, and the media-type warning |
-| `clinical/` | 12 | 7 | 2 | 3 | Social history in Turtle form, and the `clinical` v1.16 batch: encounter facts and participation, the two document status axes and the two attribution axes, and three of the five `clinical:status` binding sets |
+| `clinical/` | 15 | 8 | 2 | 5 | Social history in Turtle form; the `clinical` v1.16 batch (encounter facts and participation, the two document status axes and the two attribution axes, and three of the five `clinical:status` binding sets); and the `clinical` v1.19 medication effective dates, with the deprecated `health:` spellings of them |
 | `genomics/phenopackets/` | 9 | 9 | 0 | 0 | GA4GH Phenopacket conversion oracles |
 | `genomics/fhir-genomics-ig/` | 7 | 7 | 0 | 0 | HL7 Genomics Reporting IG bundle conversion oracles |
 | `evidence/` | 7 | 3 | 4 | 0 | Assertion facet / evidence grounding rules (evidence v1-draft) |
 | `workbench/` | 7 | 4 | 3 | 0 | Filing, notes and follow-ups (workbench v1-draft) |
-| `health/` | 8 | 3 | 0 | 5 | The two `clinical:status` binding sets that `health.shapes.ttl` owns (`health` v2.8), and the coded allergen, coded manifestation, allergy type and criticality it owns in `health` v2.9 / `clinical` v1.18 |
+| `health/` | 11 | 4 | 0 | 7 | The two `clinical:status` binding sets that `health.shapes.ttl` owns (`health` v2.8); the coded allergen, coded manifestation, allergy type and criticality it owns in `health` v2.9 / `clinical` v1.18; and the condition abatement date and category it owns in `clinical` v1.19 |
 | `genomics/clinvar/` | 4 | 4 | 0 | 0 | ClinVar VCV conversion oracles |
 | `advisory/` | 2 | 2 | 0 | 0 | Advisory reclassification oracles (advisory v1-draft) |
 | `coverage/` | 2 | 1 | 1 | 0 | `coverage:status` (`coverage` v1.5) |
 | `genomics/vcf/` | 1 | 1 | 0 | 0 | VCF conversion oracle |
 | `genomics/vrs/` | 1 | 1 | 0 | 0 | GA4GH VRS allele conversion oracle |
-| **Total** | **75** | **48** | **18** | **9** | |
+| **Total** | **81** | **50** | **18** | **13** | |
 
-**Grand total: 167 executable fixtures** (92 JSON + 75 Turtle), which is the number `scripts/run_conformance.py` reports on every run. The JSON table above had drifted from the files by seven — `absent-` was missing entirely and `lab-` and `proc-` were behind — and is corrected here against a run.
+**Grand total: 173 executable fixtures** (92 JSON + 81 Turtle), which is the number `scripts/run_conformance.py` reports on every run. The JSON table above had drifted from the files by seven — `absent-` was missing entirely and `lab-` and `proc-` were behind — and is corrected here against a run.
 
 A further 94 files under `fixtures/` are the source side of those conversion oracles (`*.input.xml`, `*.input.json`, `*.input.ldpatch`, `*.input.vcf.gz`), their `*.gaps.json` sidecars, and `INVENTORY.md` files. They carry no RDF of their own, so the SHACL runner does not execute them; each has a corresponding `*.expected.ttl` that it does execute. The runner reports them by category on every run so the number is auditable rather than assumed.
 
@@ -170,20 +170,23 @@ An SDK reading these fixtures inherits the same obligation. If your Turtle parse
 
 ## Current status
 
-As of the pinned revision in `scripts/SPEC_PIN` (`spec` at core 3.8, health 2.9, clinical 1.18, coverage 1.6, checkup 3.3):
+As of the pinned revision in `scripts/SPEC_PIN` (`spec` at core 3.8, health 2.9, clinical 1.19, coverage 1.6, checkup 3.3):
 
 ```
-passed  140
+passed  146
 failed   27
 skipped   0
-total   167        63,543 constraint checks evaluated
+total   173        63,899 constraint checks evaluated
 ```
 
-Two pin moves are folded into that block, and the failure count fell for the first
-one rather than this one. Moving to the core 3.8 / clinical 1.17 pin un-baselined
+Three pin moves are folded into that block, and the failure count fell for the first
+one only. Moving to the core 3.8 / clinical 1.17 pin un-baselined
 `clinical/status-laboratoryreport-in-progress.WARN.ttl`, taking the failures 28 → 27
-and the passes 135 → 136 with the fixture set unchanged at 163. This pin then adds
-four fixtures and no failures, 136 → 140 and 163 → 167.
+and the passes 135 → 136 with the fixture set unchanged at 163. The health 2.9 /
+clinical 1.18 pin then added four fixtures and no failures, 136 → 140 and 163 → 167.
+The clinical 1.19 pin adds six and no failures, 140 → 146 and 167 → 173; compared
+entry by entry across both runs, 0 of the 167 pre-existing fixtures changed verdict
+or reason.
 
 The first execution of these fixtures, against the older `spec` revision the pin
 originally named, was **43 passed / 68 failed / 0 skipped / 111 total**. Three things

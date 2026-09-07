@@ -1,0 +1,48 @@
+# clinical v1.19 — WARNING. A condition's abatement and category written under
+# the undefined health: spellings.
+#
+# WHY THIS EXACT RECORD. It is what the reference import path emits today: a
+# record correctly typed health:ConditionRecord, carrying its resolution date on
+# health:abatementDate and its category on health:conditionCategory. Neither
+# predicate is declared by any Cascade vocabulary. Both facts were therefore
+# real, present, and validated by nothing, while clinical:abatementDate and
+# clinical:category sat declared and unused.
+#
+# NOTE WHAT IS *NOT* WRONG HERE. The category VALUE is correct:
+# "problem-list-item" is one of the two FHIR R4 condition-category codes, and a
+# reader who knew to look under health:conditionCategory would find the right
+# answer. That is what makes this the honest fixture for the defect. Nothing
+# about the data is malformed; the only thing wrong is the predicate it is
+# written on, and no amount of value checking would have found it. Only a shape
+# that names the deprecated spelling can.
+#
+# WHAT IT ASSERTS: two sh:Warning results, one from each property shape of
+# health:ConditionSpellingShape, and NO sh:Violation. The second half is the
+# compatibility claim: both facts are optional at the shape level, so no
+# existing pod fails for carrying them this way and none will. The warning is
+# the entire migration window.
+#
+# THIS FIXTURE IS WHAT CLOSES THE WINDOW. It must be retired in the same commit
+# that removes health:ConditionSpellingShape, and its continuing to warn is the
+# record that the cascade-cli converter has not yet been changed to write the
+# clinical: spellings.
+#
+# Fully synthetic. Same condition as condition-abatement-category.VALID.ttl,
+# differing in the predicates and nothing else.
+
+@prefix cascade: <https://ns.cascadeprotocol.org/core/v1#> .
+@prefix health: <https://ns.cascadeprotocol.org/health/v1#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<urn:uuid:c0nd0119-0000-4000-8000-000000000002> a health:ConditionRecord ;
+    health:conditionName "Iron Deficiency Anemia" ;
+    health:status "resolved" ;
+    health:onsetDate "2023-11-04T00:00:00Z"^^xsd:dateTime ;
+    health:abatementDate "2025-06-30"^^xsd:date ;
+    health:conditionCategory "problem-list-item" ;
+    health:icd10Code <http://hl7.org/fhir/sid/icd-10-cm/D50.9> ;
+    health:snomedCode <http://snomed.info/sct/87522002> ;
+    health:conditionClass "hematologic" ;
+    health:sourceRecordId "ehr-cond-2023-1104-001" ;
+    cascade:dataProvenance cascade:EHRVerified ;
+    cascade:schemaVersion "1.4" .

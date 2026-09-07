@@ -1,8 +1,9 @@
 # Clinical Conformance Fixtures (Inventory)
 
 **Vocabulary covered:** `clinical` v1.4 (`social-history-smoking.ttl`, the
-`clinical:` spelling of social history) and `clinical` v1.16 (the encounter,
-document and status batch below).
+`clinical:` spelling of social history), `clinical` v1.16 (the encounter,
+document and status batch below) and `clinical` v1.19 (the medication effective
+dates and the deprecated `health:` spellings of them).
 
 ## Fixture kind
 
@@ -59,6 +60,43 @@ bound value set.
 | `status-clinicaldocument-in-progress.WARN.ttl` | WARN | "in-progress" is out of set under the wider binding *and* the narrower one, so this fixture keeps meaning what it means if the ratchet later narrows the DocumentReference-derived subtypes to `composition-status`. |
 | `status-laboratoryreport-corrected.VALID.ttl` | PASS | "corrected" is what distinguishes a result that **replaced** an earlier wrong one from the wrong one itself. Also absent from `composition-status`, so it too passes only under the wider set. |
 | `status-laboratoryreport-in-progress.WARN.ttl` | WARN **(currently FAILS — see below)** | The same value as the ClinicalDocument twin, on the class that reaches `ClinicalDocumentShape` through `sh:node`. |
+
+### The medication effective dates (clinical v1.19)
+
+`clinical:startDate` and `clinical:endDate` have existed since clinical v1.0 and
+no shape named either, while a reference import path wrote the effective period
+to `health:startDate` and `health:endDate` — predicates the health vocabulary
+does not define. FHIR R4 `MedicationStatement.effective[x]` is
+[1..1 must-support in the IPS MedicationStatement profile](https://hl7.org/fhir/uv/ips/StructureDefinition-MedicationStatement-uv-ips.html),
+so the only supplier for a required IPS element was a pair of predicates nothing
+constrained and no context mapped. This is the `clinical:procedureName` defect of
+v1.15 in two more places, and v1.19 resolves it the same way: the declared
+`clinical:` spellings win, and the `health:` ones get a warning and a window.
+
+| Fixture | Expect | Scenario |
+|---|---|---|
+| `medication-dates-lisinopril.VALID.ttl` | PASS | **Both precisions on one record, which is the point.** `clinical:startDate "2024-03-11"^^xsd:date` and `clinical:endDate "2025-01-15T09:30:00Z"^^xsd:dateTime`. The property shapes are an `sh:or` over `xsd:date` and `xsd:dateTime`, the `health:onsetDate` form, because FHIR's `dateTime` primitive permits date precision and a source that recorded a calendar day must not be given an invented midnight. A record with two dates of the *same* precision would pass under a shape that had picked either branch alone and would prove nothing about the `sh:or`; this one fails unless both branches exist. |
+| `medication-dates-health-spelling.WARN.ttl` | WARN | **The importer's current output, unchanged.** Same drug, same dosage, same dates as the `.VALID.` sibling, differing in the predicate and nothing else. Asserts two `sh:Warning` results from `clinical:MedicationDateSpellingShape`, one per spelling, **and no `sh:Violation`** — the second half being the whole compatibility claim, since unlike `procedureName` these dates are optional and no pod fails today for carrying them this way. |
+| `medication-dates-string.WARN.ttl` | WARN | `clinical:startDate "March 2024"` as a plain literal. Not gibberish and not a typo: it is what a source that recorded a **month** produces when a converter has nowhere to put month precision and copies the display text through. A malformed date would prove only that a datatype constraint is a datatype constraint; a plain string proves the constraint is reached at all, since through v1.18 the shape named neither date and a start date of any shape whatsoever was accepted in silence. |
+
+**A limit this set records rather than hides.** FHIR permits a `YYYY-MM` date
+and `xsd:date` does not admit one, so a month-precision value has no lossless
+literal in either branch of the `sh:or`. No fixture can assert a form that has
+no legal spelling; the `.WARN.` fixture's header states the limit and what a
+converter should do instead of inventing a day.
+
+**What the spelling fixture is for after this release.** clinical v1.19 says the
+warning shapes are removed once the warning is observably absent from conforming
+output. `medication-dates-health-spelling.WARN.ttl` must be retired in the same
+commit that removes `clinical:MedicationDateSpellingShape`; until then, its
+continuing to warn is the record that the window is still open.
+
+**Measured on the corpus, and worth recording separately.** `med-001` through
+`med-007` already carried `health:startDate` (`med-007` also `health:endDate`).
+At the v1.19 pin each of them reports the spelling warning and every one still
+**passes**, because a positive fixture is defined by the absence of
+`sh:Violation`. The defect was sitting in this repository's own fixtures and
+nothing could see it before this release.
 
 ## A defect this batch found, and did not paper over
 
@@ -126,3 +164,29 @@ cascade validate fixtures/clinical/<fixture> --shapes <flat dir of spec *.shapes
 ```
 
 All eleven verdicts agree with this runner's, including the lab report failure.
+
+### Verification — the clinical v1.19 medication-date fixtures
+
+Same two-run shape, and only the RED-first half makes the two warning fixtures
+mean anything.
+
+```sh
+# RED first: against the previous pin (spec 0d07ade, clinical v1.18), where none
+# of the three constraints exists.
+python3 scripts/run_conformance.py --spec-dir <spec@0d07ade> --allow-spec-drift \
+  --select 'clinical/medication-dates-*'
+#   1 passed / 2 failed. Both WARN fixtures report NO_WARNING at 55 constraint
+#   checks each: they are SHAPED — clinical:MedicationShape reaches them — and
+#   nothing notices what they carry.
+
+# GREEN: against the pin now named in scripts/SPEC_PIN (clinical v1.19).
+python3 scripts/run_conformance.py --spec-dir <spec@pin> \
+  --select 'clinical/medication-dates-*'
+#   3 passed / 0 failed. 59 checks for the VALID and string cases, 61 for the
+#   health-spelling case (the two extra are the spelling shape's property
+#   shapes firing).
+```
+
+`medication-dates-lisinopril.VALID.ttl` passes under both pins, because the
+release is strictly widening; its count going 55 → 59 is what shows the two new
+property shapes evaluating rather than the fixture merely surviving.

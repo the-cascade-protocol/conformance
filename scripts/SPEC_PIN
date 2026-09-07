@@ -10,47 +10,96 @@
 # VOCAB_VERSIONS line below, run `make -C . conformance` (or
 # `scripts/run_conformance.py`), and record the resulting counts in the PR.
 
-# This pin is the MERGE commit of the-cascade-protocol/spec PR #48 on `main`
-# (core v3.8 / health v2.9 / clinical v1.18 / coverage v1.6). It replaces the
-# DRAFT pin this conformance PR opened with, 0d07ade, the head of the spec
-# branch feat/health-2.9-coded-allergy, which was a commit a fresh clone of spec
-# could not resolve. That branch has since merged. The two trees are
-# byte-identical -- `git diff 0d07ade 0bdfe09` is empty -- so the counts below
-# were re-measured rather than carried over, and came back unchanged against a
-# revision that is now reachable from `main`.
+# This pin is the MERGE commit of the-cascade-protocol/spec PR #54 on `main`
+# (core v3.8 / health v2.9 / clinical v1.19 / coverage v1.6; health.shapes.ttl
+# v1.7, and clinical.shapes.ttl, which carries no version header of its own).
+# It replaces the DRAFT pin this conformance PR
+# opened with, 6b34e94, the head of the spec branch
+# feat/clinical-1.19-medication-dates. That branch has since merged, by two
+# steps: PR #49 merged it into feat/health-2.9-coded-allergy as 9081780, and
+# PR #54 merged that into `main` as this commit. The two trees are
+# byte-identical -- `git diff 6b34e94 a5a194a` is empty -- so the counts below
+# were re-measured rather than carried over, and came back unchanged.
 #
-# Tags `vocab/health-v2.9` and `vocab/clinical-v1.18` point at this commit
-# (pushed 2026-09-07). The pin resolves a SHA and depends on no tag.
+# 6b34e94 is in fact still reachable from `main`, as the merge preserved it, so
+# unlike the draft pin before it this one was never unresolvable. That is not
+# why it moves. A branch head is not a release identity: it names one side of a
+# merge rather than the state `main` actually publishes, nothing guarantees it
+# survives a rebase or a branch deletion, and it is not what the version tag
+# points at. The pin names the commit the release is published as.
 #
-# Previously pinned on `main` at 9b13ae4, the MERGE commit of
-# the-cascade-protocol/spec PR #32 (core v3.8 / health v2.8 / clinical v1.17 /
-# coverage v1.6; tags `vocab/core-v3.8`, `vocab/clinical-v1.17`,
-# `vocab/coverage-v1.6` point at that commit; `vocab/health-v2.8` remains on the
-# pin before it).
+# Tag `vocab/clinical-v1.19` points at this commit (pushed 2026-09-07). Tags
+# `vocab/health-v2.9` and `vocab/clinical-v1.18` remain on the previous pin,
+# 0bdfe09, because this release ships no health: term and supersedes clinical
+# v1.18. The pin resolves a SHA and depends on no tag.
+#
+# Previously pinned on `main` at 0bdfe09, the MERGE commit of
+# the-cascade-protocol/spec PR #48 (core v3.8 / health v2.9 / clinical v1.18 /
+# coverage v1.6; tags `vocab/health-v2.9` and `vocab/clinical-v1.18` point at
+# that commit). 0bdfe09 is the first parent of this commit.
 #
 # WHAT MOVING THE PIN DID, measured with this branch's fixture set against both
-# revisions: 137 passed / 30 failed / 0 skipped / 167 total and 63,447
-# constraint checks at 9b13ae4, becoming 140 / 27 / 0 / 167 and 63,543 here.
-# (The 9b13ae4 figure is a `--allow-spec-drift` run against a checkout of that
+# revisions: 142 passed / 31 failed / 0 skipped / 173 total and 63,771
+# constraint checks at 0bdfe09, becoming 146 / 27 / 0 / 173 and 63,899 here.
+# (The 0bdfe09 figure is a `--allow-spec-drift` run against a checkout of that
 # commit, which is what the flag is for. It is not ratcheted and is not the
 # suite's result; the suite's result is the second pair.)
 #
-# Exactly three verdicts changed and all three are fixtures this PR adds:
+# Exactly four verdicts changed and all four are fixtures this PR adds:
+# clinical/medication-dates-health-spelling.WARN,
+# clinical/medication-dates-string.WARN, health/condition-health-spelling.WARN
+# and health/condition-category-diagnosis.WARN each report NO_WARNING at
+# 0bdfe09 -- they are shaped, and nothing notices them, because none of the six
+# new constraints exists there -- and pass here, at 61 / 59 / 28 / 26 checks
+# against 55 / 55 / 21 / 21. The two .VALID fixtures this PR adds,
+# clinical/medication-dates-lisinopril.VALID and
+# health/condition-abatement-category.VALID, pass at BOTH revisions; the release
+# is strictly widening, so passing is not what proves them. What proves them is
+# the constraint check count, 55 -> 59 and 21 -> 26, which is the new property
+# shapes actually evaluating. No pre-existing fixture changes verdict or reason
+# -- compared entry by entry across both runs, 0 of the 167 that predate this PR
+# differ, and the only four that do are the four it adds -- which is the
+# release's "additive and strictly widening" claim measured rather than quoted.
+#
+# ONE MEASUREMENT WORTH RECORDING SEPARATELY, because it is evidence about the
+# corpus rather than about the new fixtures. Seven pre-existing JSON fixtures
+# (med-001 through med-007) already carried health:startDate, and med-007 also
+# health:endDate. At this pin each of them reports one new sh:Warning (med-007
+# two) from clinical:MedicationDateSpellingShape, and every one still PASSES,
+# because a positive fixture is defined by the absence of sh:Violation. So the
+# defect clinical v1.19 describes was already sitting in this repository's own
+# corpus, unnoticed by anything, and the release is the first thing to see it.
+#
+# The +128 constraint checks are fully accounted for: +22 across the four
+# fixtures whose verdict changed, and +106 across 21 that kept their verdict.
+# On the medication side, +66: med-001 through med-007 at +6 each (the two
+# clinical:MedicationShape date properties plus the spelling shape, which fires
+# on them), med-008 through med-011, core/ai-extracted-medication.ttl and
+# clinical/medication-dates-lisinopril.VALID at +4 each. On the condition side,
+# +40: cond-001 through cond-007 and health/condition-abatement-category.VALID
+# at +5 each, from clinical:abatementDate, clinical:category and
+# health:ConditionSpellingShape on health:ConditionRecordShape.
+#
+# WHAT MOVING TO 0bdfe09 DID, one pin earlier: 137 passed / 30 failed / 0
+# skipped / 167 total and 63,447 constraint checks at 9b13ae4, becoming
+# 140 / 27 / 0 / 167 and 63,543 at 0bdfe09. Exactly three verdicts changed and
+# all three are fixtures the previous conformance PR added:
 # health/coded-allergy-allergen-code-string.WARN, -criticality-moderate.WARN and
 # -type-sensitivity.WARN each report NO_WARNING at 9b13ae4 -- nothing notices
-# them, because none of the four constraints exists there -- and pass here. The
-# fourth new fixture, health/coded-allergy-penicillin.VALID, passes at BOTH
-# revisions; the release is strictly widening, so passing is not what proves it.
-# What proves it is the constraint check count. All twelve fixtures that
-# instantiate health:AllergyRecord go 28 -> 36 checks -- the six
-# allergy-00*.json, health/status-allergy-inactive.VALID,
-# health/status-allergy-entered-in-error.WARN and the four new ones -- which is
-# the four new property shapes on health:AllergyRecordShape actually evaluating,
-# and which accounts for the whole +96. No pre-existing fixture changes verdict
-# or reason, which is the release's "additive and strictly widening" claim
-# measured rather than quoted.
+# them, because none of the four constraints exists there -- and pass at
+# 0bdfe09. The fourth fixture, health/coded-allergy-penicillin.VALID, passes at
+# BOTH revisions. All twelve fixtures that instantiate health:AllergyRecord go
+# 28 -> 36 checks -- the six allergy-00*.json,
+# health/status-allergy-inactive.VALID,
+# health/status-allergy-entered-in-error.WARN and the four added ones -- which
+# is the four new property shapes on health:AllergyRecordShape actually
+# evaluating, and which accounts for the whole +96. 9b13ae4 is the MERGE commit
+# of the-cascade-protocol/spec PR #32 (core v3.8 / health v2.8 / clinical v1.17
+# / coverage v1.6; tags `vocab/core-v3.8`, `vocab/clinical-v1.17`,
+# `vocab/coverage-v1.6` point at it; `vocab/health-v2.8` remains on the pin
+# before it).
 #
-# WHAT MOVING TO 9b13ae4 DID, one pin earlier: exactly one verdict changed, and
+# WHAT MOVING TO 9b13ae4 DID, two pins earlier: exactly one verdict changed, and
 # it is the one that pin's baseline predicted. clinical/status-laboratoryreport-
 # in-progress.WARN.ttl -- baselined before it as a spec-owned defect (sh:node
 # escalating nested sh:Warning to sh:Violation on the six document subtypes) --
@@ -64,10 +113,10 @@
 # AIExtracted InsurancePlan and documentReferenceStatus WARN fixtures that
 # release makes possible are tracked upstream rather than rushed here.
 #
-# Re-measured at this commit: 140 passed / 27 failed / 0 skipped / 167 total,
-# 63,543 constraint checks. All 27 are enumerated in KNOWN_FAILURES.json, whose
+# Re-measured at this commit: 146 passed / 27 failed / 0 skipped / 173 total,
+# 63,899 constraint checks. All 27 are enumerated in KNOWN_FAILURES.json, whose
 # specPin is advanced to this same SHA in this commit, so the ratchet holds.
 
 repo=https://github.com/the-cascade-protocol/spec
-commit=0bdfe09898b7c9ca667ce6ca1fea05e2a3290a41
-vocab=core=3.8 health=2.9 clinical=1.18 coverage=1.6 checkup=3.3 pots=1.4
+commit=a5a194a00dc72bf6c883011da2c644b1f3c336db
+vocab=core=3.8 health=2.9 clinical=1.19 coverage=1.6 checkup=3.3 pots=1.4

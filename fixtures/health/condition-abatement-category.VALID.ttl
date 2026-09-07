@@ -1,0 +1,58 @@
+# clinical v1.19 / health.shapes.ttl v1.7 — a resolved condition, stated in the
+# declared clinical: spellings.
+#
+# WHAT THIS FIXTURE IS FOR. Two facts a condition record needs had declared
+# homes that no shape named, while a reference import path wrote them under
+# health:abatementDate and health:conditionCategory, predicates the health
+# vocabulary does not define. clinical:abatementDate could not even be written
+# here honestly before this release: it declared rdfs:domain clinical:Condition,
+# a class no import path emits, and clinical v1.19 drops that domain so the
+# property is writable on health:ConditionRecord, the class that IS emitted.
+#
+# THE TWO FACTS, AND WHY EACH VALUE:
+#
+#   clinical:abatementDate  "2025-06-30"^^xsd:date
+#                           FHIR R4 Condition.abatement[x]. Written at DATE
+#                           precision, the same sh:or over xsd:date and
+#                           xsd:dateTime that health:onsetDate above it uses,
+#                           because a resolution recorded as a calendar day must
+#                           not be given an invented time. health:onsetDate on
+#                           this same record is an xsd:dateTime, so the record
+#                           carries one of each and a shape that had picked
+#                           either branch alone would fail on one of them.
+#   clinical:category       "problem-list-item"
+#                           FHIR R4 Condition.category, extensible binding,
+#                           which IPS marks must-support. Two codes exist and
+#                           this is the one that means "carried on the patient's
+#                           problem list", which is what a resolved chronic
+#                           condition is. The other, "encounter-diagnosis", is
+#                           what its sibling condition-category-diagnosis.WARN
+#                           .ttl is about not being.
+#
+# health:status "resolved" and the abatement date are stated TOGETHER on
+# purpose: the status says the condition ended and the abatement date says when,
+# and a record carrying one without the other is the incomplete form this
+# release lets a converter stop producing.
+#
+# The health: spellings are deliberately ABSENT here; the sibling
+# condition-health-spelling.WARN.ttl carries them.
+#
+# Fully synthetic. No such patient exists.
+
+@prefix cascade: <https://ns.cascadeprotocol.org/core/v1#> .
+@prefix clinical: <https://ns.cascadeprotocol.org/clinical/v1#> .
+@prefix health: <https://ns.cascadeprotocol.org/health/v1#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<urn:uuid:c0nd0119-0000-4000-8000-000000000001> a health:ConditionRecord ;
+    health:conditionName "Iron Deficiency Anemia" ;
+    health:status "resolved" ;
+    health:onsetDate "2023-11-04T00:00:00Z"^^xsd:dateTime ;
+    clinical:abatementDate "2025-06-30"^^xsd:date ;
+    clinical:category "problem-list-item" ;
+    health:icd10Code <http://hl7.org/fhir/sid/icd-10-cm/D50.9> ;
+    health:snomedCode <http://snomed.info/sct/87522002> ;
+    health:conditionClass "hematologic" ;
+    health:sourceRecordId "ehr-cond-2023-1104-001" ;
+    cascade:dataProvenance cascade:EHRVerified ;
+    cascade:schemaVersion "1.4" .

@@ -1,0 +1,50 @@
+# clinical v1.19 — WARNING. clinical:category "diagnosis" on a condition.
+#
+# WHY THIS EXACT VALUE, AND NOT A NONSENSE STRING. "diagnosis" is a real word in
+# real clinical documents and it is the wrong word HERE, which is the only kind
+# of value that tests a binding rather than testing that enumerations enumerate.
+#
+# It is the C-CDA vocabulary. A C/CDA Problem Section carries its entries as
+# problem observations whose value is typed with words like "diagnosis",
+# "problem", "finding", "symptom" and "complaint" — the SNOMED CT problem-type
+# concepts the Problem Type value set binds. FHIR R4 Condition.category is a
+# DIFFERENT element answering a DIFFERENT question: not "what kind of clinical
+# statement is this" but "where does this condition live in the chart", with
+# exactly two codes, problem-list-item and encounter-diagnosis
+# (https://hl7.org/fhir/R4/valueset-condition-category.html).
+#
+# So this is the confusion the binding exists to catch: a converter reading a
+# C-CDA problem observation and copying its type word straight into
+# Condition.category produces exactly this record. The word looks like a
+# category, it is spelled correctly, and it means something real — it is simply
+# an answer to the other question. "encounter-diagnosis" is the code it would
+# have to be mapped to if the source meant a diagnosis made at a visit, and
+# nothing in the string itself says whether it did.
+#
+# A nonsense value would have proved only that sh:in is enumerated. This one
+# proves the two vocabularies are distinguished.
+#
+# sh:Warning, not sh:Violation, per the core v3.5 ratchet: this is the first
+# release to bind clinical:category on any shape and pods may already carry it.
+# Nothing rejects this record, and the fixture asserts exactly that alongside
+# the warning. The binding is also FHIR-extensible rather than required, which
+# is a second reason the severity is Warning and not Violation.
+#
+# Fully synthetic.
+
+@prefix cascade: <https://ns.cascadeprotocol.org/core/v1#> .
+@prefix clinical: <https://ns.cascadeprotocol.org/clinical/v1#> .
+@prefix health: <https://ns.cascadeprotocol.org/health/v1#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<urn:uuid:c0nd0119-0000-4000-8000-000000000003> a health:ConditionRecord ;
+    health:conditionName "Type 2 Diabetes Mellitus" ;
+    health:status "active" ;
+    health:onsetDate "2021-08-19T00:00:00Z"^^xsd:dateTime ;
+    clinical:category "diagnosis" ;
+    health:icd10Code <http://hl7.org/fhir/sid/icd-10-cm/E11.9> ;
+    health:snomedCode <http://snomed.info/sct/44054006> ;
+    health:conditionClass "endocrine" ;
+    health:sourceRecordId "ehr-cond-2021-0819-001" ;
+    cascade:dataProvenance cascade:EHRVerified ;
+    cascade:schemaVersion "1.4" .
