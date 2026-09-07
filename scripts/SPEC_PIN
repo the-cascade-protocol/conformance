@@ -19,12 +19,8 @@
 # were re-measured rather than carried over, and came back unchanged against a
 # revision that is now reachable from `main`.
 #
-# TAGS NOT YET PUSHED: `vocab/health-v2.9` and `vocab/clinical-v1.18` do not
-# exist on the spec remote as of this commit. `git ls-remote --tags` names
-# `vocab/health-v2.8` and `vocab/clinical-v1.17` as the newest of each, both on
-# earlier commits. The pin resolves a SHA and depends on no tag, so nothing in
-# this suite is affected; recorded so a reader who goes looking for those tags
-# knows they are absent rather than mistyped.
+# Tags `vocab/health-v2.9` and `vocab/clinical-v1.18` point at this commit
+# (pushed 2026-09-07). The pin resolves a SHA and depends on no tag.
 #
 # Previously pinned on `main` at 9b13ae4, the MERGE commit of
 # the-cascade-protocol/spec PR #32 (core v3.8 / health v2.8 / clinical v1.17 /
