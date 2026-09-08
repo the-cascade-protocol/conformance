@@ -27,9 +27,9 @@ python3 scripts/check_baseline.py --results results.json
 python3 scripts/check_literal_fidelity.py
 ```
 
-Against the revision in `scripts/SPEC_PIN` (`spec` at core 3.8 / health 2.9 /
-clinical 1.19 / coverage 1.6), which is what CI executes: **146 passed / 27
-failed / 0 skipped / 173 total**, 63,899 constraint checks, and all 27 are
+Against the revision in `scripts/SPEC_PIN` (`spec` at core 3.9 / health 2.9 /
+clinical 1.19 / coverage 1.6), which is what CI executes: **150 passed / 27
+failed / 0 skipped / 177 total**, 64,043 constraint checks, and all 27 are
 enumerated in `KNOWN_FAILURES.json`, so the ratchet holds and the job is green.
 
 The result depends on which `spec` revision you point it at, so **always say which**,

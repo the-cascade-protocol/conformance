@@ -1,0 +1,39 @@
+# core v3.9 — WARNING. An empty family name.
+#
+# THE EMPTY STRING IS WHAT A FORM WITH AN UNTOUCHED FIELD WRITES. A serializer
+# that reads a text input and emits whatever it holds emits "" for a field the
+# user never filled in, and the triple that reaches the pod is a claim the user
+# never made: it says the person's family name IS the empty string, which is a
+# different fact from having no family name recorded. Nothing downstream can
+# tell the two apart afterwards, because both produce a blank in every rendering
+# — and only one of them means "unknown".
+#
+# sh:minLength 1 is what notices it. That is the whole of what this constraint
+# buys, and it is why the three name properties carry a minimum length at all
+# when none of them is required: absence is fine and says nothing, presence with
+# no content is a defect and says something false.
+#
+# THIS FIXTURE IS `.WARN.` AND NOT `.INVALID.`, AND THAT IS THE CORE v3.5
+# RATCHET, NOT A HEDGE. A constraint on a fact no producer has yet had the
+# opportunity to write enters at sh:Warning, so a pod carrying an empty name is
+# REPORTED and never rejected — a profile is not thrown away over a blank field,
+# and the rest of it (date of birth, contact, address) stays readable. Filing
+# this as `.INVALID.ttl` would fail with NO_VIOLATION and would assert a
+# severity core v3.9 explicitly declined to take.
+#
+# foaf:givenName and foaf:name are both present and well formed here, so the
+# node is not otherwise deficient and exactly one thing is under test.
+#
+# cascade:dateOfBirth is what reaches it. See extended-profile-name.VALID.ttl.
+#
+# Fully synthetic.
+
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix cascade: <https://ns.cascadeprotocol.org/core/v1#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<#me>
+    foaf:givenName "Alex" ;
+    foaf:familyName "" ;
+    foaf:name "Alex Rivera" ;
+    cascade:dateOfBirth "1990-01-01"^^xsd:date .

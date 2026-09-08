@@ -1,0 +1,30 @@
+# core v3.9 — a name known only as one string.
+#
+# A NAME THAT DOES NOT DIVIDE IS LEGAL, AND THIS IS WHAT Patient.name.text
+# CARRIES. Two ordinary situations produce it: the source never separated the
+# parts (a scanned document, a free-text intake field, a C-CDA <name> with no
+# <given>/<family>), and the person's name does not divide into given and family
+# parts at all. IPS invariant ips-pat-1 asks for at least ONE of family, given
+# or text, so a Patient built from this fixture satisfies the profile with
+# text alone:
+#   https://hl7.org/fhir/uv/ips/StructureDefinition-Patient-uv-ips.html
+#
+# WHAT THIS FIXTURE CATCHES. A shape that required foaf:givenName or
+# foaf:familyName — the obvious way to write "a patient must have a name" —
+# would make this profile a finding, and the cure a producer would reach for is
+# to split the string on a space and guess which half is which. core v3.9
+# declares none of the three required at any severity, and this fixture is that
+# decision being exercised rather than asserted: it must report NOTHING, at any
+# severity, while still being reached by cascade:ExtendedProfileShape.
+#
+# cascade:dateOfBirth is what reaches it. See extended-profile-name.VALID.ttl.
+#
+# Fully synthetic.
+
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix cascade: <https://ns.cascadeprotocol.org/core/v1#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<#me>
+    foaf:name "Marisol Delacroix-Vance" ;
+    cascade:dateOfBirth "1958-06-07"^^xsd:date .

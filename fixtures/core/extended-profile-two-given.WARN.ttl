@@ -1,0 +1,40 @@
+# core v3.9 — WARNING. Two given names on the pod owner.
+#
+# THE CARDINALITY IS A DELIBERATE 1 AND THE PROPOSAL SAYS SO. FOAF places no
+# cardinality on foaf:givenName and FHIR's HumanName.given is 0..*, so capping
+# it here is a choice this vocabulary is making rather than one it inherited.
+# The reason is that a second given name written as a second triple has no
+# order: RDF triples are a set, so "Alex" and "Jordan" come back in whatever
+# order the store hands them over, and a consumer rebuilding a name from them
+# will produce "Jordan Alex" as readily as "Alex Jordan". Nothing in the graph
+# says which is which.
+#
+# WHERE THE SECOND GIVEN NAME GOES: foaf:name, which carries the whole name as
+# one string in the order the person writes it, and which is the source of IPS
+# Patient.name.text. That is the same instruction the one-string case gets in
+# extended-profile-name-only.VALID.ttl, from the other direction.
+#
+# THIS FIXTURE IS `.WARN.` AND NOT `.INVALID.` for the same reason as
+# extended-profile-empty-family.WARN.ttl: the core v3.5 ratchet puts a new
+# constraint on existing data at sh:Warning. A profile carrying two given names
+# is reported, and the rest of it stays readable. Filing it `.INVALID.ttl` would
+# fail with NO_VIOLATION.
+#
+# Note that this fixture would ALSO be worth having if the cardinality were ever
+# relaxed to repeatable, as the RFC's own alternative contemplated: it would
+# then move to `.VALID.ttl` and the file is the record of which way the question
+# was answered.
+#
+# cascade:dateOfBirth is what reaches it. See extended-profile-name.VALID.ttl.
+#
+# Fully synthetic.
+
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix cascade: <https://ns.cascadeprotocol.org/core/v1#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<#me>
+    foaf:givenName "Alex", "Jordan" ;
+    foaf:familyName "Rivera" ;
+    foaf:name "Alex Jordan Rivera" ;
+    cascade:dateOfBirth "1990-01-01"^^xsd:date .
