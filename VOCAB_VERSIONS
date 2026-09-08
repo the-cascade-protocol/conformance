@@ -70,7 +70,40 @@
 # encounter-001 was a KNOWN_FAILURES entry with reason UNSHAPED: it reported
 # conforming while evaluating ZERO constraints, because clinical:Encounter had no
 # shape. It now evaluates 29, so the entry is gone.
-core=3.8
+core=3.9
+# core=3.9: NO new term. The pod owner's name gets a declared home -- <#me> in
+#   profile/extended.ttl, using foaf:givenName, foaf:familyName and foaf:name --
+#   and core.shapes.ttl v1.8 adds cascade:ExtendedProfileShape to constrain it.
+#   The gap being closed is an IPS one: Patient-uv-ips makes Patient.name 1..*
+#   with the SHALL:populate obligation and invariant ips-pat-1 (at least one of
+#   family, given, text), and through v3.8 no ontology in spec declared a name
+#   for the pod owner at all. No cascade: term is minted, which is the ruling
+#   itself: FOAF already defines all three.
+#   The shape is sh:targetSubjectsOf cascade:dateOfBirth, because an extended
+#   profile carries NO rdf:type of its own. All three properties are xsd:string,
+#   sh:maxCount 1, sh:minLength 1, at sh:Warning per the core v3.5 ratchet;
+#   presence is not required at any severity.
+#   Fixtures: core/extended-profile-name.VALID (all three names plus the
+#   section 3.6 example's date of birth, contact and address -- the shape of the
+#   file an IPS Patient entry is built from), core/extended-profile-name-only
+#   .VALID (foaf:name alone, the name a source never separated, which ips-pat-1
+#   accepts on text alone), core/extended-profile-empty-family.WARN (the empty
+#   string a form with an untouched field writes; sh:minLength 1 notices it
+#   without rejecting the profile) and core/extended-profile-two-given.WARN (the
+#   cardinality is a deliberate 1; a second given name goes in foaf:name).
+#   All four measured UNSHAPED with 0 constraint checks against core 3.8 -- a
+#   stronger RED than NO_WARNING, because at that revision no shape in the
+#   published set reaches an untyped <#me> at all -- and all four pass here at 9
+#   constraint checks each.
+#   ALSO MEASURED, and it is the release's compatibility claim rather than a new
+#   fixture: cascade:PatientProfile nodes carry cascade:dateOfBirth too, so the
+#   new shape reaches eight pre-existing fixtures (profile-001, -002, -003, -005
+#   and the four genomics/phenopackets oracles). Every one keeps its verdict and
+#   its reason; only their constraint counts rise.
+#   NOT covered by a negative fixture, deliberately: ABSENCE of a name, which is
+#   not a finding in v3.9. Every other fixture in this repository omits all three
+#   properties and none of them changes verdict, which exercises that claim 176
+#   times rather than asserting it once.
 # core=3.8: cascade:PatientReported defined -- the provenance individual 17
 #   sh:in lists already accepted. No fixture verdict changes; ontology-derived
 #   enums (sdk-python) stop rejecting a value every shape permits.

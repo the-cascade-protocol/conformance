@@ -1,0 +1,58 @@
+# core v3.9 — the pod owner's name on <#me> in profile/extended.ttl.
+#
+# THIS IS THE SHAPE OF THE FILE THE IPS PATIENT ENTRY IS BUILT FROM. IPS
+# Patient.name is 1..* with the SHALL:populate obligation, and invariant
+# ips-pat-1 requires at least one of family, given or text:
+#   https://hl7.org/fhir/uv/ips/StructureDefinition-Patient-uv-ips.html
+# The mapping core v3.9 declares is family <- foaf:familyName,
+# given <- foaf:givenName, text <- foaf:name, and this fixture carries all
+# three, so an exporter reading it has every element the profile asks for and
+# nothing has to be reconstructed.
+#
+# WHY <#me> AND NOT A urn:uuid. The subject is a relative IRI on purpose: it is
+# the WebID fragment, the same subject profile/card.ttl types foaf:Person, and
+# an extended profile adds predicates to it rather than minting a second node
+# for the same person. The runner resolves it against the fixture's own base, so
+# it parses as an absolute IRI here without the fixture having to invent a pod
+# location.
+#
+# WHY cascade:dateOfBirth IS PRESENT. It is what makes this fixture a test at
+# all. An extended profile carries NO rdf:type of its own, so
+# cascade:ExtendedProfileShape targets the SUBJECTS OF cascade:dateOfBirth; a
+# <#me> with only names on it would match no shape, and the runner would report
+# UNSHAPED rather than a pass. Every fixture in this group carries one for that
+# reason.
+#
+# WHY THE NAME IS HERE AND NOT IN card.ttl: pod-structure.md section 3.2 makes
+# card.ttl publicly readable and forbids PHI in it, and a person's name is PHI.
+# Section 3.6 is this file. It is inside the encrypted pod like every other pod
+# file.
+#
+# WHY biologicalSex IS "male" AND NOT THE "M" IN THE SECTION 3.6 EXAMPLE: "male"
+# is a member of the value set core.ttl declares for cascade:biologicalSex and
+# "M" is not. Nothing reaches it on this node today, because
+# cascade:PatientProfileShape targets the class and this node is untyped, so
+# either string would pass — which is exactly why the fixture must not carry the
+# one the vocabulary rejects.
+#
+# Fully synthetic. "Alex Rivera" is the invented owner of the reference pod.
+
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix vcard: <http://www.w3.org/2006/vcard/ns#> .
+@prefix cascade: <https://ns.cascadeprotocol.org/core/v1#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<#me>
+    foaf:givenName "Alex" ;
+    foaf:familyName "Rivera" ;
+    foaf:name "Alex Rivera" ;
+    cascade:dateOfBirth "1990-01-01"^^xsd:date ;
+    cascade:biologicalSex "male" ;
+    vcard:hasTelephone "+1-555-000-0000" ;
+    vcard:hasEmail "user@example.com" ;
+    cascade:address [
+        cascade:addressLine "123 Main St" ;
+        cascade:addressCity "Seattle" ;
+        cascade:addressState "WA" ;
+        cascade:addressPostalCode "98101"
+    ] .

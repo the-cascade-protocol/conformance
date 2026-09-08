@@ -1,8 +1,9 @@
 # Core Conformance Fixtures (Inventory)
 
 **Vocabulary covered:** `core` v3.3 (`cascade:AIExtractionActivity` provenance),
-`core` v3.5 (the ORIGIN axis, `cascade:sourceIdentity`) and `core` v3.7
-(`cascade:Attachment`, the content-addressed document store).
+`core` v3.5 (the ORIGIN axis, `cascade:sourceIdentity`), `core` v3.7
+(`cascade:Attachment`, the content-addressed document store) and `core` v3.9
+(the pod owner's name on the extended profile).
 
 ## Fixture kind
 
@@ -43,6 +44,83 @@ measured on real pods:
 | `source-identity-two-transports-one-system.VALID.ttl` | PASS | **The invariant.** One synthetic health system exporting twice. The LABEL differs (endpoint domain vs custodian organization name) and the INGESTION batch differs, and the ORIGIN is identical. A consumer grouping by ORIGIN sees one system; a consumer grouping by either other axis sees two. |
 | `source-identity-unprefixed.INVALID.ttl` | FAIL | The display label written straight into the origin axis, with no scheme, so a consumer cannot tell what was actually derived. Rejected on `sh:pattern`. |
 | `source-identity-repeated.INVALID.ttl` | FAIL | Two origins on one record. Both values are individually well formed, so only the cardinality constraint catches it. Rejected on `sh:maxCount`. |
+
+## The pod owner's name (core v3.9)
+
+An IPS cannot be produced without a Patient, and
+[Patient-uv-ips](https://hl7.org/fhir/uv/ips/StructureDefinition-Patient-uv-ips.html)
+makes `Patient.name` `1..*` with the SHALL:populate obligation and invariant
+`ips-pat-1` (at least one of `family`, `given`, `text`). Through core v3.8 no
+ontology in `spec` declared a name for the pod owner at all. core v3.9 puts it on
+`<#me>` in `profile/extended.ttl`, using `foaf:givenName`, `foaf:familyName` and
+`foaf:name`. **No `cascade:` term is minted** — FOAF already defines all three —
+so what these fixtures exercise is a shape, not a vocabulary addition.
+
+The name is PHI, which is why it is here and not in `profile/card.ttl`:
+`pod-structure.md` section 3.2 makes `card.ttl` the publicly-readable profile
+document and forbids PHI in it, and its `foaf:name` stays a generic display name
+shown before the pod is unlocked. `profile/extended.ttl` is inside the encrypted
+pod like every other pod file.
+
+**Every fixture in this group carries `cascade:dateOfBirth`, and that is not
+decoration.** An extended profile carries no `rdf:type` of its own — it adds
+predicates to the same `<#me>` subject `card.ttl` types `foaf:Person` — so
+`cascade:ExtendedProfileShape` targets the SUBJECTS OF `cascade:dateOfBirth`. A
+`<#me>` carrying only names would match no shape at all and the runner would
+report `UNSHAPED`, which is a vacuous pass wearing a failure's name.
+
+| Fixture | Expect | Scenario |
+|---|---|---|
+| `extended-profile-name.VALID.ttl` | PASS | All three name properties on `<#me>`, beside the section 3.6 example's date of birth, telephone, email and address. This is the shape of the file an IPS Patient entry is built from: `family` ← `foaf:familyName`, `given` ← `foaf:givenName`, `text` ← `foaf:name`. `cascade:biologicalSex` is `"male"` rather than the `"M"` the section 3.6 example prints, because `"male"` is a member of the value set `core.ttl` declares and `"M"` is not; nothing reaches the property on an untyped node today, which is exactly why the fixture must not carry the spelling the vocabulary rejects. |
+| `extended-profile-name-only.VALID.ttl` | PASS | `foaf:name` alone. A name known only as one string — the source never separated it, or the person's name does not divide into given and family parts — is legal, and it is what `Patient.name.text` carries; `ips-pat-1` is satisfied on `text` alone. What this fixture catches is a shape that required `givenName` or `familyName`, whose cure a producer would reach for is splitting the string on a space and guessing which half is which. It must report **nothing**, at any severity, while still being reached. |
+| `extended-profile-empty-family.WARN.ttl` | WARN | `foaf:familyName ""`. The empty string is what a form with an untouched field writes, and the triple that reaches the pod claims the family name *is* the empty string — a different fact from having none recorded, and indistinguishable from it in every rendering afterwards. `sh:minLength 1` notices it. `.WARN.` and not `.INVALID.` because the constraint enters at Warning per the core v3.5 ratchet: a profile is reported, never thrown away, over a blank field. Filing it `.INVALID.ttl` would fail with `NO_VIOLATION`. |
+| `extended-profile-two-given.WARN.ttl` | WARN | Two `foaf:givenName` values. The cardinality is a deliberate 1 and the proposal says so, even though FOAF places no cardinality on the property and FHIR's `HumanName.given` is `0..*`: two triples have no order, so a consumer rebuilding the name produces `"Jordan Alex"` as readily as `"Alex Jordan"`. A second given name goes in `foaf:name`, which carries the whole name in the order the person writes it. `.WARN.` for the same ratchet reason as above. |
+
+### Extended profile verification
+
+```sh
+# RED first: against the previous pin (spec a5a194a, core v3.8), where
+# cascade:ExtendedProfileShape does not exist.
+python3 scripts/run_conformance.py --spec-dir <spec@a5a194a> --allow-spec-drift
+#   All four report UNSHAPED with 0 constraint checks.
+
+# GREEN: against the pin now named in scripts/SPEC_PIN (core v3.9).
+python3 scripts/run_conformance.py --spec-dir <spec@pin> --select 'core/extended-profile*'
+#   4 passed / 0 failed; 9 constraint checks each.
+```
+
+`UNSHAPED` is a **stronger** RED here than the `NO_WARNING` a `.WARN.` fixture
+usually gives at the previous pin. At core v3.8 there is no shape in the entire
+published set that reaches an untyped `<#me>`, so nothing could have noticed the
+empty family name or the second given name — nothing was looking at the node.
+A `--select 'core/extended-profile*'` run at that pin does not even complete: the
+runner's own self-check aborts with *"zero constraint checks evaluated across the
+entire suite"*, which is the same fact stated by the harness instead of by a
+verdict. So the RED above is measured with a full-suite run, and the four rows
+are read out of it.
+
+**One measurement belongs here rather than in a fixture,** because it is the
+release's compatibility claim rather than a new assertion.
+`cascade:PatientProfile` nodes carry `cascade:dateOfBirth` too, so the new shape
+also reaches eight fixtures that were already in this repository:
+
+| Fixture | Constraint checks, core v3.8 → v3.9 | Verdict |
+|---|---|---|
+| `profile-001.json` | 32 → 41 | pass, unchanged |
+| `profile-002.json` | 76 → 85 | pass, unchanged |
+| `profile-003.json` | 32 → 41 | pass, unchanged |
+| `profile-005.json` | 32 → 41 | pass, unchanged |
+| `genomics/phenopackets/bethlem-myopathy.expected.ttl` | 53 → 62 | fail `VIOLATIONS`, same `genomics:` reasons |
+| `genomics/phenopackets/v2-cohort.expected.ttl` | 164 → 191 | fail `VIOLATIONS`, same `genomics:` reasons |
+| `genomics/phenopackets/v2-family.expected.ttl` | 193 → 220 | fail `VIOLATIONS`, same `genomics:` reasons |
+| `genomics/phenopackets/v2-phenopacket.expected.ttl` | 100 → 109 | fail `VIOLATIONS`, same `genomics:` reasons |
+
+Every one keeps its verdict and its reason; only the counts move.
+`profile-004.json` carries no `cascade:dateOfBirth` and stays at 32, which is the
+control. Absence of a name is deliberately NOT a finding in core v3.9, so there
+is no negative fixture for a profile that omits all three properties; every other
+fixture in this repository omits them and none changes verdict, which exercises
+that claim 173 times rather than asserting it once.
 
 ## Attachments (core v3.7)
 

@@ -10,7 +10,51 @@
 # VOCAB_VERSIONS line below, run `make -C . conformance` (or
 # `scripts/run_conformance.py`), and record the resulting counts in the PR.
 
-# This pin is the MERGE commit of the-cascade-protocol/spec PR #54 on `main`
+# PINNED at d819bc2, the MERGE commit of the-cascade-protocol/spec PR #56 on
+# `main` (core v3.9 / core.shapes.ttl v1.8; health v2.9, clinical v1.19,
+# coverage v1.6 unchanged). Tag `vocab/core-v3.9` points at this commit (pushed
+# 2026-09-08). It replaces the DRAFT pin this conformance PR opened with,
+# 7aadfb6, the first commit on feat/core-3.9-patient-name; the branch carried a
+# second commit (32ae425, the merged cascade.jsonld context) before merging, and
+# neither touches a `*.shapes.ttl`, so the counts below were re-measured at the
+# merge commit rather than carried over, and came back unchanged: 150 / 27 / 0 /
+# 177, 64,043 constraint checks. The branch was cut from `main` at a5a194a, the
+# pin this one replaces, and merged straight back to `main`: not stacked.
+#
+# WHAT MOVING THE PIN DOES: four fixtures are added and four verdicts change,
+# all of them the new ones. Full suite 146 passed / 27 failed / 0 skipped / 173
+# total at the previous pin, 150 / 27 / 0 / 177 here. NOT ONE PRE-EXISTING
+# FIXTURE CHANGES VERDICT OR REASON — compared entry by entry across both runs,
+# 0 of 173 differ — which is the release's "strictly widening" claim measured
+# rather than quoted.
+#
+# THE FOUR NEW FIXTURES REPORT `UNSHAPED` AT THE PREVIOUS PIN, WITH ZERO
+# CONSTRAINT CHECKS, and that is a stronger RED than the `NO_WARNING` the two
+# `.WARN.` ones would give if they were merely unconstrained. An extended
+# profile carries no `rdf:type` of its own, so at core v3.8 there is no shape in
+# the entire published set that reaches an untyped `<#me>` at all: nothing could
+# have noticed the empty family name or the second given name, because nothing
+# was looking at the node. A `--select 'core/extended-profile*'` run at that pin
+# does not even complete — the runner's own self-check aborts with "zero
+# constraint checks evaluated across the entire suite", which is the same fact
+# stated by the harness rather than by a verdict. All four pass here at 9
+# constraint checks each.
+#
+# ONE MEASUREMENT WORTH RECORDING SEPARATELY, because it is evidence about the
+# corpus rather than about the new fixtures. `cascade:ExtendedProfileShape`
+# targets the SUBJECTS OF `cascade:dateOfBirth`, and `cascade:PatientProfile`
+# nodes carry that property too, so the shape reaches eight pre-existing
+# fixtures as well: profile-001, -002, -003 and -005 go 32 → 41, 76 → 85, 32 →
+# 41 and 32 → 41 constraint checks, and the four genomics/phenopackets oracles
+# go 53 → 62, 164 → 191, 193 → 220 and 100 → 109. Every one of the eight keeps
+# its verdict and its reason exactly — the four profile fixtures still pass, the
+# four phenopacket oracles still fail for the same `genomics:` reasons they
+# failed for before. That is the release's claim that a `cascade:PatientProfile`
+# node is also reached and passes unchanged, exercised eight times rather than
+# asserted once. (profile-004 carries no `cascade:dateOfBirth` and stays at 32.)
+#
+# PREVIOUSLY PINNED at a5a194a, the MERGE commit of the-cascade-protocol/spec
+# PR #54 on `main`. The block below is that pin's own note, kept verbatim.
 # (core v3.8 / health v2.9 / clinical v1.19 / coverage v1.6; health.shapes.ttl
 # v1.7, and clinical.shapes.ttl, which carries no version header of its own).
 # It replaces the DRAFT pin this conformance PR
@@ -118,5 +162,5 @@
 # specPin is advanced to this same SHA in this commit, so the ratchet holds.
 
 repo=https://github.com/the-cascade-protocol/spec
-commit=a5a194a00dc72bf6c883011da2c644b1f3c336db
-vocab=core=3.8 health=2.9 clinical=1.19 coverage=1.6 checkup=3.3 pots=1.4
+commit=d819bc2c045266f9f79ebf9398cbbb82a6156d27
+vocab=core=3.9 health=2.9 clinical=1.19 coverage=1.6 checkup=3.3 pots=1.4
