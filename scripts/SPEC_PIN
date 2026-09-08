@@ -10,12 +10,16 @@
 # VOCAB_VERSIONS line below, run `make -C . conformance` (or
 # `scripts/run_conformance.py`), and record the resulting counts in the PR.
 
-# DRAFT PIN — NOT A MERGE COMMIT. This points at the head of the spec branch
-# feat/core-3.9-patient-name (core v3.9 / core.shapes.ttl v1.8), which is not on
-# `main` yet. It MUST be re-pinned to that PR's merge commit, and the counts
-# re-measured, before this conformance PR leaves draft. Until then the pin names
-# a commit a fresh clone of spec cannot resolve. The branch is NOT stacked: it
-# was cut from `main` at a5a194a, the pin it replaces.
+# PINNED at d819bc2, the MERGE commit of the-cascade-protocol/spec PR #56 on
+# `main` (core v3.9 / core.shapes.ttl v1.8; health v2.9, clinical v1.19,
+# coverage v1.6 unchanged). Tag `vocab/core-v3.9` points at this commit (pushed
+# 2026-09-08). It replaces the DRAFT pin this conformance PR opened with,
+# 7aadfb6, the first commit on feat/core-3.9-patient-name; the branch carried a
+# second commit (32ae425, the merged cascade.jsonld context) before merging, and
+# neither touches a `*.shapes.ttl`, so the counts below were re-measured at the
+# merge commit rather than carried over, and came back unchanged: 150 / 27 / 0 /
+# 177, 64,043 constraint checks. The branch was cut from `main` at a5a194a, the
+# pin this one replaces, and merged straight back to `main`: not stacked.
 #
 # WHAT MOVING THE PIN DOES: four fixtures are added and four verdicts change,
 # all of them the new ones. Full suite 146 passed / 27 failed / 0 skipped / 173
@@ -158,5 +162,5 @@
 # specPin is advanced to this same SHA in this commit, so the ratchet holds.
 
 repo=https://github.com/the-cascade-protocol/spec
-commit=7aadfb6a106c0b99ff539e9f10f300aa71714add
+commit=d819bc2c045266f9f79ebf9398cbbb82a6156d27
 vocab=core=3.9 health=2.9 clinical=1.19 coverage=1.6 checkup=3.3 pots=1.4
