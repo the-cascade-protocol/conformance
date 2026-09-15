@@ -658,6 +658,13 @@ Test data is derived from two sources:
 
    This matters because the ratchet pattern the vocabularies use — publish a new constraint at `sh:Warning`, raise it to `sh:Violation` a release later once the warning is observably absent from conforming output — puts every constraint in its *first* release outside this suite's reach. Two such constraints exist at the pinned revision: `clinical:VitalSignShape`'s interpretation value set and `clinical:ProcedureNameSpellingShape`. Their behaviour is verified against the real validator elsewhere, and each becomes testable here on the release that raises it to `sh:Violation`. When that happens, add the negative fixture in the same change that raises the severity.
 
+## Third-Party Terminology Notices
+
+Fixtures and the reference pod carry SNOMED CT, LOINC, ICD-10-CM and RxNorm
+codes. The attributions those sources require are in `THIRD-PARTY-NOTICES.md`.
+A new fixture that introduces a code system not listed there needs its notice
+added in the same change.
+
 ## Adding New Fixtures
 
 To add a new fixture:
