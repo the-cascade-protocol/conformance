@@ -6,7 +6,8 @@
   "input": {
     "id": "urn:uuid:0b7a1c00-0002-4000-8000-000000000001",
     "type": "SleepSession",
-    "sourceRecordId": "google-health-sleep_id:9187266553401923847",
+    "sourceRecordId": "9187266553401923847",
+    "sourceIdSpace": "google-health",
     "periodStart": "2031-07-02T06:12:30Z",
     "periodEnd": "2031-07-02T13:40:00Z",
     "utcOffset": "-07:00",
@@ -20,7 +21,7 @@
     "dataProvenance": "DeviceGenerated"
   },
   "expectedOutput": {
-    "turtle": "@prefix cascade: <https://ns.cascadeprotocol.org/core/v1#> .\n@prefix health: <https://ns.cascadeprotocol.org/health/v1#> .\n@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .\n\n<urn:uuid:0b7a1c00-0002-4000-8000-000000000001> a health:SleepSession ;\n    health:sourceRecordId \"google-health-sleep_id:9187266553401923847\" ;\n    health:periodStart \"2031-07-02T06:12:30Z\"^^xsd:dateTime ;\n    health:periodEnd \"2031-07-02T13:40:00Z\"^^xsd:dateTime ;\n    health:utcOffset \"-07:00\" ;\n    health:algorithmVersion \"sleep_session_v2\" ;\n    health:awakeMinutes \"41\"^^xsd:decimal ;\n    health:lightSleepMinutes \"251\"^^xsd:decimal ;\n    health:deepSleepMinutes \"66\"^^xsd:decimal ;\n    health:remSleepMinutes \"89.5\"^^xsd:decimal ;\n    health:sleepScore \"81\"^^xsd:decimal ;\n    health:device <urn:uuid:0b7a1c00-0003-4000-8000-000000000002> ;\n    cascade:dataProvenance cascade:DeviceGenerated .\n",
+    "turtle": "@prefix cascade: <https://ns.cascadeprotocol.org/core/v1#> .\n@prefix health: <https://ns.cascadeprotocol.org/health/v1#> .\n@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .\n\n<urn:uuid:0b7a1c00-0002-4000-8000-000000000001> a health:SleepSession ;\n    health:sourceRecordId \"9187266553401923847\" ;\n    health:sourceIdSpace \"google-health\" ;\n    health:periodStart \"2031-07-02T06:12:30Z\"^^xsd:dateTime ;\n    health:periodEnd \"2031-07-02T13:40:00Z\"^^xsd:dateTime ;\n    health:utcOffset \"-07:00\" ;\n    health:algorithmVersion \"sleep_session_v2\" ;\n    health:awakeMinutes \"41\"^^xsd:decimal ;\n    health:lightSleepMinutes \"251\"^^xsd:decimal ;\n    health:deepSleepMinutes \"66\"^^xsd:decimal ;\n    health:remSleepMinutes \"89.5\"^^xsd:decimal ;\n    health:sleepScore \"81\"^^xsd:decimal ;\n    health:device <urn:uuid:0b7a1c00-0003-4000-8000-000000000002> ;\n    cascade:dataProvenance cascade:DeviceGenerated .\n",
     "validationMode": "shacl-valid"
   },
   "shouldAccept": true,
@@ -29,5 +30,5 @@
     "wellness",
     "device"
   ],
-  "notes": "The source id exceeds 2^53 and is carried as a string with its id space named. Google supplies an offset and no zone name, so health:utcOffset is written and health:timeZone is not. No in-bed total: Fitbit records none, and the session interval is the time in bed. Fully synthetic."
+  "notes": "The source id exceeds 2^53 and is carried raw as a string, with its id space in health:sourceIdSpace. Google supplies an offset and no zone name, so health:utcOffset is written and health:timeZone is not. No in-bed total: Fitbit records none, and the session interval is the time in bed. Fully synthetic."
 }

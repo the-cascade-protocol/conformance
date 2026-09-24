@@ -208,3 +208,4 @@ write the `clinical:` spellings.
 |---|---|---|
 | `aggregate-v2-9-shape.WARN.ttl` | WARN | A daily vital reading written as v2.9 wrote it (no interval, no statistic) is reported by `health:AggregateReadingShape` at `sh:Warning` and not rejected. |
 | `sleep-quality-deprecated.WARN.ttl` | WARN | The deprecated `health:sleepQuality` still validates; `health:SleepQualitySpellingShape` reports it at `sh:Warning`. |
+| `session-id-space-unknown.WARN.ttl` | WARN | An id space outside the closed set (`healthkit`, `google-health`, `fitbit`) is reported by `health:SessionSoftShape` at `sh:Warning`, not rejected. |

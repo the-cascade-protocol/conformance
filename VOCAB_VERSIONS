@@ -159,7 +159,8 @@ health=2.10
 #   wellness/health-v2-10-records.VALID.ttl (one document holding all four
 #   record kinds; zero Violations and zero Warnings),
 #   health/aggregate-v2-9-shape.WARN.ttl (a v2.9-shaped reading is noticed,
-#   not rejected), health/sleep-quality-deprecated.WARN.ttl. Measured against
+#   not rejected), health/sleep-quality-deprecated.WARN.ttl,
+#   health/session-id-space-unknown.WARN.ttl. Measured against
 #   the v2.9 spec (601e817) and the v2.10 branch: every pre-existing fixture
 #   keeps its verdict (150 passed / 27 failed both); six daily-snapshot
 #   fixtures gain Warnings only.
