@@ -1,0 +1,11 @@
+# core v3.10 -- VALID. The pod owner's home zone on the extended profile.
+#
+# cascade:dayZone is an IANA zone name on <#me> in /profile/extended.ttl, beside
+# cascade:dateOfBirth. Fully synthetic.
+
+@prefix cascade: <https://ns.cascadeprotocol.org/core/v1#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<https://pod.example/profile/card#me>
+    cascade:dateOfBirth "1990-01-01"^^xsd:date ;
+    cascade:dayZone "America/Los_Angeles" .

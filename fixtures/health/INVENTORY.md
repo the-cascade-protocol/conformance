@@ -201,3 +201,10 @@ python3 scripts/run_conformance.py --spec-dir <spec@pin> --select 'health/condit
 in the same commit that removes `health:ConditionSpellingShape`. Until then, its
 continuing to warn is the record that the converter has not yet been changed to
 write the `clinical:` spellings.
+
+## health v2.10
+
+| File | Polarity | What it asserts |
+|---|---|---|
+| `aggregate-v2-9-shape.WARN.ttl` | WARN | A daily vital reading written as v2.9 wrote it (no interval, no statistic) is reported by `health:AggregateReadingShape` at `sh:Warning` and not rejected. |
+| `sleep-quality-deprecated.WARN.ttl` | WARN | The deprecated `health:sleepQuality` still validates; `health:SleepQualitySpellingShape` reports it at `sh:Warning`. |

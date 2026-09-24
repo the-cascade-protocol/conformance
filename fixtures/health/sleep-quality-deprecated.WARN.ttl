@@ -1,0 +1,23 @@
+# health v2.10 -- WARNING. The deprecated health:sleepQuality still validates.
+#
+# health:sleepQuality (Excellent / Good / Fair / Poor) is deprecated in v2.10,
+# not removed: a home-grown enum with no standard behind it. Existing pods carry
+# it, so health:SleepQualitySpellingShape reports each use at sh:Warning and
+# nothing rejects it. The v1.2 value constraint on health:DailySleepSnapshotShape
+# is unchanged, and this value is one of its four permitted individuals.
+#
+# Fully synthetic.
+
+@prefix cascade: <https://ns.cascadeprotocol.org/core/v1#> .
+@prefix health: <https://ns.cascadeprotocol.org/health/v1#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<urn:uuid:0b7a1c00-0021-4000-8000-000000000001> a health:DailySleepSnapshot ;
+    cascade:date "2031-03-08T08:00:00Z"^^xsd:dateTime ;
+    health:periodStart "2031-03-08T08:00:00Z"^^xsd:dateTime ;
+    health:periodEnd "2031-03-09T08:00:00Z"^^xsd:dateTime ;
+    health:timeZone "America/Los_Angeles" ;
+    cascade:statistic "sum" ;
+    health:durationHours "7.2"^^xsd:decimal ;
+    health:sleepQuality health:Good ;
+    cascade:dataProvenance cascade:DeviceGenerated .

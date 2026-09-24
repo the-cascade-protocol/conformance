@@ -40,7 +40,10 @@ Every count below is derived from the fixture files themselves, not maintained b
 | Medication Administration | `medadmin-` | 1 | Medication administration events |
 | Supplement | `supp-` | 2 | Dietary supplements and OTC products (`clinical:SupplementShape`) |
 | Data Absence | `absent-` | 3 | A record whose primary value is absent for a stated reason (`cascade:dataAbsentReason`, core v3.6) |
-| **Total** | | **92** | 25 data types |
+| Workout | `workout-` | 2 | One exercise session with a source-namespaced activity type (health v2.10) |
+| Sleep Session | `sleepsession-` | 2 | One sleep episode with stage totals and a source-supplied score (health v2.10) |
+| Wellness Device | `healthdevice-` | 2 | A consumer device as a record, identity from name plus hardware model (health v2.10) |
+| **Total** | | **98** | 28 data types |
 
 ### RDF fixtures (`fixtures/**/*.ttl`)
 

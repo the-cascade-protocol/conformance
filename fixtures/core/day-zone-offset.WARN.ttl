@@ -1,0 +1,14 @@
+# core v3.10 -- WARNING. A numeric offset written where a zone name belongs.
+#
+# "-07:00" says where the clock stood at one instant, not which zone a later day
+# belongs to. The Google Health export supplies only offsets, so this is exactly
+# what a careless importer writes. cascade:DayZoneShape reports it at sh:Warning.
+#
+# Fully synthetic.
+
+@prefix cascade: <https://ns.cascadeprotocol.org/core/v1#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<https://pod.example/profile/card#me>
+    cascade:dateOfBirth "1990-01-01"^^xsd:date ;
+    cascade:dayZone "-07:00" .

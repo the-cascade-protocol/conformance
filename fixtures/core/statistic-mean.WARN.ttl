@@ -1,0 +1,21 @@
+# core v3.10 -- WARNING. A statistic outside the value set.
+#
+# "mean" is what a writer reaches for; the value set says "average", after IEEE
+# 1752.1 descriptive_statistic. cascade:StatisticShape reports it at sh:Warning
+# and does not reject the record.
+#
+# Fully synthetic.
+
+@prefix cascade: <https://ns.cascadeprotocol.org/core/v1#> .
+@prefix health: <https://ns.cascadeprotocol.org/health/v1#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<urn:uuid:0b7a1c00-0022-4000-8000-000000000001> a health:DailyVitalReading ;
+    cascade:date "2031-03-08T08:00:00Z"^^xsd:dateTime ;
+    health:periodStart "2031-03-08T08:00:00Z"^^xsd:dateTime ;
+    health:periodEnd "2031-03-09T08:00:00Z"^^xsd:dateTime ;
+    health:timeZone "America/Los_Angeles" ;
+    cascade:statistic "mean" ;
+    health:value "61"^^xsd:double ;
+    health:unit "bpm" ;
+    cascade:dataProvenance cascade:DeviceGenerated .

@@ -70,7 +70,14 @@
 # encounter-001 was a KNOWN_FAILURES entry with reason UNSHAPED: it reported
 # conforming while evaluating ZERO constraints, because clinical:Encounter had no
 # shape. It now evaluates 29, so the entry is gone.
-core=3.9
+core=3.10
+# core=3.10: cascade:statistic (IEEE 1752.1 descriptive_statistic plus
+#   baseline, lowerBound, upperBound) and cascade:dayZone (the owner's home IANA
+#   zone on the extended profile). Both shaped open-world at sh:Warning.
+#   Fixtures: core/statistic-mean.WARN.ttl, core/day-zone.VALID.ttl,
+#   core/day-zone-offset.WARN.ttl. Authored on branch
+#   feat/health-v2-10-fixtures against spec feat/health-v2-10 with
+#   --allow-spec-drift; SPEC_PIN is NOT moved until that spec branch merges.
 # core=3.9: NO new term. The pod owner's name gets a declared home -- <#me> in
 #   profile/extended.ttl, using foaf:givenName, foaf:familyName and foaf:name --
 #   and core.shapes.ttl v1.8 adds cascade:ExtendedProfileShape to constrain it.
@@ -143,7 +150,19 @@ core=3.9
 #   ExportManifestShape / cascade:schemaVersion / sh:minCount).
 #   NOT covered: cascade:InteractionScenario has a shape and no fixture.
 # core=3.3: cascade:AIAsserted provenance leaf (ungrounded general-AI content, subClassOf ConsumerGenerated) + cascade:ProxyAgent caregiver-proxy actor (ProxyAgentShape requires actsForPatient, proxyRelationship, proxyGrantedAt). Fixtures: social-002, proxy-001, proxy-002.
-health=2.9
+health=2.10
+# health=2.10: health:Workout, health:SleepSession, health:Device (new classes,
+#   sh:Violation for essentials) and the interval, statistic, cut zone and
+#   device link on the three daily aggregate classes (sh:Warning, the v3.5
+#   ratchet). health:sleepQuality deprecated. Fixtures: workout-001/002,
+#   sleepsession-001/002, healthdevice-001/002,
+#   wellness/health-v2-10-records.VALID.ttl (one document holding all four
+#   record kinds; zero Violations and zero Warnings),
+#   health/aggregate-v2-9-shape.WARN.ttl (a v2.9-shaped reading is noticed,
+#   not rejected), health/sleep-quality-deprecated.WARN.ttl. Measured against
+#   the v2.9 spec (601e817) and the v2.10 branch: every pre-existing fixture
+#   keeps its verdict (150 passed / 27 failed both); six daily-snapshot
+#   fixtures gain Warnings only.
 # health=2.9: health:allergenCode and health:manifestationCode, the coded
 #   substance and the coded manifestation(s), both owl:ObjectProperty, IRI-
 #   valued, repeatable, no sh:pattern and no sh:maxCount. Paired with clinical
