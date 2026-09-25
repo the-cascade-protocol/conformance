@@ -1,0 +1,26 @@
+{
+  "id": "sleepsession-002",
+  "description": "Negative: sleep session with a score outside 0-100",
+  "dataType": "SleepSession",
+  "vocabulary": "health",
+  "input": {
+    "id": "urn:uuid:0b7a1c00-0002-4000-8000-000000000002",
+    "type": "SleepSession",
+    "periodStart": "2031-07-03T06:00:00Z",
+    "periodEnd": "2031-07-03T13:30:00Z",
+    "sleepScore": 140,
+    "dataProvenance": "DeviceGenerated"
+  },
+  "expectedOutput": {
+    "turtle": "@prefix cascade: <https://ns.cascadeprotocol.org/core/v1#> .\n@prefix health: <https://ns.cascadeprotocol.org/health/v1#> .\n@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .\n\n<urn:uuid:0b7a1c00-0002-4000-8000-000000000002> a health:SleepSession ;\n    health:periodStart \"2031-07-03T06:00:00Z\"^^xsd:dateTime ;\n    health:periodEnd \"2031-07-03T13:30:00Z\"^^xsd:dateTime ;\n    health:sleepScore \"140\"^^xsd:decimal ;\n    cascade:dataProvenance cascade:DeviceGenerated .\n",
+    "validationMode": "shacl-valid"
+  },
+  "shouldAccept": false,
+  "tags": [
+    "negative",
+    "range-constraint",
+    "wellness"
+  ],
+  "shaclConstraintViolated": "health:SleepSessionShape bounds health:sleepScore to 0-100 (sh:maxInclusive 100, sh:Violation).",
+  "notes": "health:sleepScore is the source's overall score on a 0-100 scale. A value outside it is either a unit error or a sentinel imported as a number; the measured Google export writes -2 and -1 as sub-score sentinels. Fully synthetic."
+}

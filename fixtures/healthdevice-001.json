@@ -1,0 +1,33 @@
+{
+  "id": "healthdevice-001",
+  "description": "Wellness device: a watch built from Apple's device string with the memory address discarded and both manufacturer spellings kept (health v2.10)",
+  "dataType": "Device",
+  "vocabulary": "health",
+  "input": {
+    "id": "urn:uuid:0b7a1c00-0003-4000-8000-000000000001",
+    "type": "Device",
+    "deviceName": "Apple Watch",
+    "deviceModel": "Watch",
+    "hardwareVersion": "Watch3,3",
+    "deviceManufacturer": [
+      "Apple Inc.",
+      "Apple"
+    ],
+    "softwareVersion": [
+      "6.1.1",
+      "6.2"
+    ],
+    "dataProvenance": "DeviceGenerated"
+  },
+  "expectedOutput": {
+    "turtle": "@prefix cascade: <https://ns.cascadeprotocol.org/core/v1#> .\n@prefix health: <https://ns.cascadeprotocol.org/health/v1#> .\n@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .\n\n<urn:uuid:0b7a1c00-0003-4000-8000-000000000001> a health:Device ;\n    health:deviceName \"Apple Watch\" ;\n    health:deviceModel \"Watch\" ;\n    health:hardwareVersion \"Watch3,3\" ;\n    health:deviceManufacturer \"Apple Inc.\" , \"Apple\" ;\n    health:softwareVersion \"6.1.1\" , \"6.2\" ;\n    cascade:dataProvenance cascade:DeviceGenerated .\n",
+    "validationMode": "shacl-valid"
+  },
+  "shouldAccept": true,
+  "tags": [
+    "happy-path",
+    "wellness",
+    "device"
+  ],
+  "notes": "Prefix healthdevice- because device- is the clinical ImplantedDevice series. Identity is the normalized name plus the hardware model; the manufacturer and software version are repeatable and are not identity inputs, because Apple prints 'Apple' or 'Apple Inc.' for one watch depending on software version. Fully synthetic."
+}

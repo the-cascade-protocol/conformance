@@ -1,0 +1,26 @@
+{
+  "id": "workout-002",
+  "description": "Negative: workout with no activity type",
+  "dataType": "Workout",
+  "vocabulary": "health",
+  "input": {
+    "id": "urn:uuid:0b7a1c00-0001-4000-8000-000000000003",
+    "type": "Workout",
+    "periodStart": "2031-03-09T16:00:00Z",
+    "periodEnd": "2031-03-09T16:45:00Z",
+    "durationMinutes": 45,
+    "dataProvenance": "DeviceGenerated"
+  },
+  "expectedOutput": {
+    "turtle": "@prefix cascade: <https://ns.cascadeprotocol.org/core/v1#> .\n@prefix health: <https://ns.cascadeprotocol.org/health/v1#> .\n@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .\n\n<urn:uuid:0b7a1c00-0001-4000-8000-000000000003> a health:Workout ;\n    health:periodStart \"2031-03-09T16:00:00Z\"^^xsd:dateTime ;\n    health:periodEnd \"2031-03-09T16:45:00Z\"^^xsd:dateTime ;\n    health:durationMinutes \"45\"^^xsd:decimal ;\n    cascade:dataProvenance cascade:DeviceGenerated .\n",
+    "validationMode": "shacl-valid"
+  },
+  "shouldAccept": false,
+  "tags": [
+    "negative",
+    "required-field",
+    "wellness"
+  ],
+  "shaclConstraintViolated": "health:WorkoutShape requires exactly one health:activityType (sh:minCount 1, sh:Violation).",
+  "notes": "A workout whose activity is unknown is not a usable record, and health:Workout is new in health v2.10, so no earlier pod can hold one: the requirement is sh:Violation from the start (the core v3.7 AttachmentShape precedent). Fully synthetic."
+}

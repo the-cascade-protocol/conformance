@@ -1,0 +1,36 @@
+{
+  "id": "workout-001",
+  "description": "Workout: one outdoor cycling session from a watch, with totals, its zone, a route attachment link and a device link (health v2.10)",
+  "dataType": "Workout",
+  "vocabulary": "health",
+  "input": {
+    "id": "urn:uuid:0b7a1c00-0001-4000-8000-000000000001",
+    "type": "Workout",
+    "activityType": "healthkit:HKWorkoutActivityTypeCycling",
+    "sourceRecordId": "5E0B6D1A-3C2F-4A8B-9E7D-1F2A3B4C5D6E",
+    "sourceIdSpace": "healthkit",
+    "periodStart": "2031-03-08T17:05:00Z",
+    "periodEnd": "2031-03-08T18:12:30Z",
+    "timeZone": "America/Los_Angeles",
+    "durationMinutes": 64.5,
+    "distanceMeters": 28140,
+    "activeEnergyKcal": 712,
+    "averageHeartRate": 138,
+    "maximumHeartRate": 171,
+    "indoor": false,
+    "workoutRoute": "urn:uuid:0b7a1c00-0001-4000-8000-000000000002",
+    "device": "urn:uuid:0b7a1c00-0003-4000-8000-000000000001",
+    "dataProvenance": "DeviceGenerated"
+  },
+  "expectedOutput": {
+    "turtle": "@prefix cascade: <https://ns.cascadeprotocol.org/core/v1#> .\n@prefix health: <https://ns.cascadeprotocol.org/health/v1#> .\n@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .\n\n<urn:uuid:0b7a1c00-0001-4000-8000-000000000001> a health:Workout ;\n    health:activityType \"healthkit:HKWorkoutActivityTypeCycling\" ;\n    health:sourceRecordId \"5E0B6D1A-3C2F-4A8B-9E7D-1F2A3B4C5D6E\" ;\n    health:sourceIdSpace \"healthkit\" ;\n    health:periodStart \"2031-03-08T17:05:00Z\"^^xsd:dateTime ;\n    health:periodEnd \"2031-03-08T18:12:30Z\"^^xsd:dateTime ;\n    health:timeZone \"America/Los_Angeles\" ;\n    health:durationMinutes \"64.5\"^^xsd:decimal ;\n    health:distanceMeters \"28140\"^^xsd:decimal ;\n    health:activeEnergyKcal \"712\"^^xsd:decimal ;\n    health:averageHeartRate \"138\"^^xsd:decimal ;\n    health:maximumHeartRate \"171\"^^xsd:decimal ;\n    health:indoor false ;\n    health:workoutRoute <urn:uuid:0b7a1c00-0001-4000-8000-000000000002> ;\n    health:device <urn:uuid:0b7a1c00-0003-4000-8000-000000000001> ;\n    cascade:dataProvenance cascade:DeviceGenerated .\n",
+    "validationMode": "shacl-valid"
+  },
+  "shouldAccept": true,
+  "tags": [
+    "happy-path",
+    "wellness",
+    "device"
+  ],
+  "notes": "health:activityType carries the source's identifier under a source namespace (healthkit:), never a mapped code. The route and device are referenced by IRI only: they live in other files of a pod, which is why health:WorkoutShape checks sh:nodeKind sh:IRI and not sh:class. The source id is written raw, as a string, and its id space goes in health:sourceIdSpace. Fully synthetic."
+}

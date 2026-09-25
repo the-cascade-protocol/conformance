@@ -218,3 +218,11 @@ Absence of `cascade:sourceIdentity` is deliberately NOT a finding in core v3.5, 
 there is no negative fixture for a record that omits it. Every other fixture in
 this repository omits it and continues to pass, which is that compatibility claim
 being exercised 122 times rather than asserted once.
+
+## core v3.10
+
+| File | Polarity | What it asserts |
+|---|---|---|
+| `statistic-mean.WARN.ttl` | WARN | `cascade:statistic "mean"` is outside the value set (the IEEE 1752.1 spelling is `average`); reported, not rejected. |
+| `day-zone.VALID.ttl` | VALID | `cascade:dayZone "America/Los_Angeles"` on the extended profile. |
+| `day-zone-offset.WARN.ttl` | WARN | A numeric offset (`-07:00`) written where an IANA zone name belongs; reported, not rejected. |

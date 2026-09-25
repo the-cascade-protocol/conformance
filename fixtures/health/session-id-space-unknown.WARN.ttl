@@ -1,0 +1,19 @@
+# health v2.10 -- WARNING. An id space outside the closed set this release declares.
+#
+# health:sourceIdSpace is a closed set per release (healthkit, google-health,
+# fitbit). A writer that invents a finer token, here "google-health-sleep_id",
+# is reported by health:SessionSoftShape at sh:Warning and not rejected. The id
+# itself stays raw in health:sourceRecordId, as a string.
+#
+# Fully synthetic.
+
+@prefix cascade: <https://ns.cascadeprotocol.org/core/v1#> .
+@prefix health: <https://ns.cascadeprotocol.org/health/v1#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<urn:uuid:0b7a1c00-0023-4000-8000-000000000001> a health:SleepSession ;
+    health:sourceRecordId "9187266553401923848" ;
+    health:sourceIdSpace "google-health-sleep_id" ;
+    health:periodStart "2031-03-09T06:30:00Z"^^xsd:dateTime ;
+    health:periodEnd "2031-03-09T13:45:00Z"^^xsd:dateTime ;
+    cascade:dataProvenance cascade:DeviceGenerated .

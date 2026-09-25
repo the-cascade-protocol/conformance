@@ -52,7 +52,10 @@
         "AppealRecord",
         "SocialHistoryRecord",
         "Supplement",
-        "ProxyAgent"
+        "ProxyAgent",
+        "Workout",
+        "SleepSession",
+        "Device"
       ],
       "description": "The Cascade Protocol data type under test"
     },

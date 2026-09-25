@@ -1,0 +1,113 @@
+# health v2.10 / core v3.10 -- VALID. One wellness document holding each of the
+# record kinds the round introduces, written the way the aggregator will write
+# them:
+#
+#   - a named health:DailyVitalReading with its UTC interval, its statistic, the
+#     zone its day was cut in and its device;
+#   - a health:Workout whose route is a cascade:Attachment (the GPX file,
+#     content-addressed, never parsed into triples);
+#   - a health:SleepSession with per-stage minute totals and a source-supplied
+#     score;
+#   - the health:Device both readings point at.
+#
+# Expected: no sh:Violation, and no sh:Warning either. Every soft constraint
+# health.shapes.ttl v1.8 adds (interval, statistic, zone form, id space,
+# UTC form) is satisfied here, so a Warning on this file is a regression.
+#
+# The day is cut in America/Los_Angeles, which is UTC-8 in March 2031 until the
+# DST change on the 9th: 2031-03-08 local is 08:00Z to 08:00Z the next day.
+#
+# Fully synthetic.
+
+@prefix cascade: <https://ns.cascadeprotocol.org/core/v1#> .
+@prefix health: <https://ns.cascadeprotocol.org/health/v1#> .
+@prefix fhir: <http://hl7.org/fhir/> .
+@prefix sct: <http://snomed.info/sct/> .
+@prefix loinc: <http://loinc.org/rdf#> .
+@prefix ucum: <http://unitsofmeasure.org/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<urn:uuid:0b7a1c00-0010-4000-8000-000000000001> a health:HeartRateData ;
+    health:restingHeartRate "61"^^xsd:double ;
+    health:restingHeartRateHistory (
+        <urn:uuid:0b7a1c00-0010-4000-8000-000000000002>
+    ) .
+
+<urn:uuid:0b7a1c00-0010-4000-8000-000000000002> a health:DailyVitalReading ;
+    fhir:code sct:364075005 ;
+    cascade:loincCode loinc:40443-4 ;
+    health:value "61"^^xsd:double ;
+    health:unit "bpm" ;
+    cascade:date "2031-03-08T08:00:00Z"^^xsd:dateTime ;
+    health:periodStart "2031-03-08T08:00:00Z"^^xsd:dateTime ;
+    health:periodEnd "2031-03-09T08:00:00Z"^^xsd:dateTime ;
+    health:timeZone "America/Los_Angeles" ;
+    cascade:statistic "average" ;
+    cascade:sampleCount 1 ;
+    health:device <urn:uuid:0b7a1c00-0010-4000-8000-000000000009> ;
+    cascade:dataProvenance cascade:DeviceGenerated ;
+    prov:wasGeneratedBy [ a prov:Activity ; cascade:sourceType "healthKit" ; prov:label "Apple Watch" ] .
+
+<urn:uuid:0b7a1c00-0010-4000-8000-000000000003> a health:ActivityData ;
+    health:workoutHistory (
+        <urn:uuid:0b7a1c00-0010-4000-8000-000000000004>
+    ) .
+
+<urn:uuid:0b7a1c00-0010-4000-8000-000000000004> a health:Workout ;
+    health:activityType "healthkit:HKWorkoutActivityTypeCycling" ;
+    health:snomedCode sct:229068000 ;
+    health:sourceRecordId "2B9D4E6F-7A1C-4F3E-8D2B-6C5A4E3F2D1C" ;
+    health:sourceIdSpace "healthkit" ;
+    health:periodStart "2031-03-08T17:05:00Z"^^xsd:dateTime ;
+    health:periodEnd "2031-03-08T18:12:30Z"^^xsd:dateTime ;
+    health:timeZone "America/Los_Angeles" ;
+    health:durationMinutes "64.5"^^xsd:decimal ;
+    health:distanceMeters "28140"^^xsd:decimal ;
+    health:activeEnergyKcal "712"^^xsd:decimal ;
+    health:averageHeartRate "138"^^xsd:decimal ;
+    health:maximumHeartRate "171"^^xsd:decimal ;
+    health:indoor false ;
+    health:workoutRoute <urn:uuid:0b7a1c00-0010-4000-8000-000000000005> ;
+    health:device <urn:uuid:0b7a1c00-0010-4000-8000-000000000009> ;
+    cascade:dataProvenance cascade:DeviceGenerated .
+
+<urn:uuid:0b7a1c00-0010-4000-8000-000000000005> a cascade:Attachment ;
+    cascade:attachmentPath "attachments/sha-256/4f9a2c7e1b3d5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8" ;
+    cascade:contentHash "4f9a2c7e1b3d5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8" ;
+    cascade:hashAlgorithm "sha-256" ;
+    cascade:attachmentMediaType "application/gpx+xml" ;
+    cascade:byteSize 184233 ;
+    cascade:attachmentTitle "route_2031-03-08_9.05am.gpx" .
+
+<urn:uuid:0b7a1c00-0010-4000-8000-000000000006> a health:SleepData ;
+    health:sleepSessionHistory (
+        <urn:uuid:0b7a1c00-0010-4000-8000-000000000007>
+    ) .
+
+<urn:uuid:0b7a1c00-0010-4000-8000-000000000007> a health:SleepSession ;
+    health:sourceRecordId "9187266553401923847" ;
+    health:sourceIdSpace "google-health" ;
+    health:periodStart "2031-03-08T06:48:00Z"^^xsd:dateTime ;
+    health:periodEnd "2031-03-08T14:30:00Z"^^xsd:dateTime ;
+    health:utcOffset "-08:00" ;
+    health:algorithmVersion "sleep_session_v2" ;
+    health:awakeMinutes "30"^^xsd:decimal ;
+    health:lightSleepMinutes "238"^^xsd:decimal ;
+    health:deepSleepMinutes "82"^^xsd:decimal ;
+    health:remSleepMinutes "112"^^xsd:decimal ;
+    health:sleepScore "84"^^xsd:decimal ;
+    health:device <urn:uuid:0b7a1c00-0010-4000-8000-000000000008> ;
+    cascade:dataProvenance cascade:DeviceGenerated .
+
+<urn:uuid:0b7a1c00-0010-4000-8000-000000000008> a health:Device ;
+    health:deviceName "Fitbit Air" ;
+    cascade:dataProvenance cascade:DeviceGenerated .
+
+<urn:uuid:0b7a1c00-0010-4000-8000-000000000009> a health:Device ;
+    health:deviceName "Apple Watch" ;
+    health:deviceModel "Watch" ;
+    health:hardwareVersion "Watch3,3" ;
+    health:deviceManufacturer "Apple Inc." ;
+    health:softwareVersion "6.2" ;
+    cascade:dataProvenance cascade:DeviceGenerated .

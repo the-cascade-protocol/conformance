@@ -1,0 +1,25 @@
+{
+  "id": "healthdevice-002",
+  "description": "Negative: wellness device with no name",
+  "dataType": "Device",
+  "vocabulary": "health",
+  "input": {
+    "id": "urn:uuid:0b7a1c00-0003-4000-8000-000000000003",
+    "type": "Device",
+    "hardwareVersion": "Watch6,1",
+    "dataProvenance": "DeviceGenerated"
+  },
+  "expectedOutput": {
+    "turtle": "@prefix cascade: <https://ns.cascadeprotocol.org/core/v1#> .\n@prefix health: <https://ns.cascadeprotocol.org/health/v1#> .\n@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .\n\n<urn:uuid:0b7a1c00-0003-4000-8000-000000000003> a health:Device ;\n    health:hardwareVersion \"Watch6,1\" ;\n    cascade:dataProvenance cascade:DeviceGenerated .\n",
+    "validationMode": "shacl-valid"
+  },
+  "shouldAccept": false,
+  "tags": [
+    "negative",
+    "required-field",
+    "wellness",
+    "device"
+  ],
+  "shaclConstraintViolated": "health:DeviceShape requires exactly one non-empty health:deviceName (sh:minCount 1, sh:Violation).",
+  "notes": "The normalized name is the one identity input every measured source supplies (Google has no hardware model at all), so a device without it cannot be identified. Fully synthetic."
+}
