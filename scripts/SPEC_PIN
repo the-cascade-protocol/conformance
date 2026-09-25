@@ -10,6 +10,44 @@
 # VOCAB_VERSIONS line below, run `make -C . conformance` (or
 # `scripts/run_conformance.py`), and record the resulting counts in the PR.
 
+# PINNED at 735bb57, the MERGE commit of the-cascade-protocol/spec PR #70 on
+# `main` (health v2.11, comment hygiene; core v3.10, clinical v1.19, coverage
+# v1.6 unchanged). Tag `vocab/health-v2.11` points at this commit (pushed
+# 2026-09-25). It replaces the pin below, 1c3e33b. Five files differ between
+# the two commits (git diff --numstat): health.ttl (+10/-8), health.shapes.ttl
+# (+5/-3), workbench.ttl (+2/-3, draft, unrowed), contexts/v1/health.jsonld
+# (+1/-1) and VOCAB_VERSIONS (+1/-1) — every changed line in the four
+# ontology/context files is an internal tracker reference (a root-backlog
+# number or a bracketed proposal tag) removed from a comment, per PR #70's own
+# description ("comment hygiene"); no term, range, shape or context value
+# changed. The PR also adds scripts/check-no-internal-references.py and its
+# test, which do not touch this repo's fixtures or shapes at all.
+#
+# WHY THIS PIN MOVED. cascade-cli PR #110 needed health 2.11 because the
+# health 2.10 comments it synced from spec carried the same internal tracker
+# references and tripped that repo's own no-internal-references test; #70 is
+# the upstream fix. This repo is not affected by that failure mode (it has no
+# analogous test), but the pin is moved anyway so conformance and cascade-cli
+# stay on the same released health revision, per the vocabulary change
+# checklist.
+#
+# Measured on this branch's fixture set (190 fixtures) against both revisions:
+#   1c3e33b (old pin): 163 passed / 27 failed / 0 skipped / 190 total, 64,847
+#     constraint checks.
+#   735bb57 (new pin): 163 passed / 27 failed / 0 skipped / 190 total, 64,847
+#     constraint checks.
+#
+# ZERO verdicts change. Compared entry by entry across both runs (outcome,
+# reason and constraint-check count), 0 of 190 fixtures differ — expected,
+# since a comment-only release changes no term, range, shape or constraint.
+# The 27 that fail at 735bb57 are byte-identical, as (fixture, reason) pairs,
+# to the 27 already enumerated in KNOWN_FAILURES.json, whose specPin is
+# advanced to 735bb57 in this same commit, so the ratchet holds.
+#
+# Verified against an isolated detached worktree of spec at 735bb57 (not the
+# shared sibling checkout at ../spec), separate from a second isolated
+# worktree at 1c3e33b used only for the comparison run above.
+#
 # PINNED at 1c3e33b, the MERGE commit of the-cascade-protocol/spec PR #68 on
 # `main` (health v2.10, core v3.10; clinical v1.19, coverage v1.6 unchanged).
 # Tags `vocab/health-v2.10` and `vocab/core-v3.10` point at this commit (pushed
@@ -235,5 +273,5 @@
 # specPin is advanced to this same SHA in this commit, so the ratchet holds.
 
 repo=https://github.com/the-cascade-protocol/spec
-commit=1c3e33bb7bdbc8150d3d8ac2da786f5947b8ae68
-vocab=core=3.10 health=2.10 clinical=1.19 coverage=1.6 checkup=3.3 pots=1.4
+commit=735bb57b62f22a4e3dab24aa6cc7e0495ec57146
+vocab=core=3.10 health=2.11 clinical=1.19 coverage=1.6 checkup=3.3 pots=1.4
