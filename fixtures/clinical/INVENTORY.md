@@ -2,8 +2,10 @@
 
 **Vocabulary covered:** `clinical` v1.4 (`social-history-smoking.ttl`, the
 `clinical:` spelling of social history), `clinical` v1.16 (the encounter,
-document and status batch below) and `clinical` v1.19 (the medication effective
-dates and the deprecated `health:` spellings of them).
+document and status batch below), `clinical` v1.19 (the medication effective
+dates and the deprecated `health:` spellings of them) and `clinical` v1.20
+(the canonical narrative-text spelling, `clinical:documentType`, and the two
+undeclared narrative spellings' migration window).
 
 ## Fixture kind
 
@@ -98,6 +100,44 @@ At the v1.19 pin each of them reports the spelling warning and every one still
 `sh:Violation`. The defect was sitting in this repository's own fixtures and
 nothing could see it before this release.
 
+### The narrative text spelling and `clinical:documentType` (clinical v1.20)
+
+`clinical:narrativeText`'s comment is restated as the canonical spelling for FHIR
+`Narrative.text.div` **and** C-CDA section text alike; through v1.19 it named FHIR
+only. `clinical:documentType` is declared for the first time, a human-readable
+document-type label distinct from the closed-slug `cascade:documentType`. Three
+new shapes, all `sh:Warning`, target the same seven document classes as the
+v1.16 status bindings: `clinical:NarrativeTextCountShape` (`sh:maxCount 1` on
+`clinical:narrativeText`, relaxed from the `sh:Violation` it carried on
+`ClinicalDocumentShape` through v1.19), `clinical:DocumentTypeShape`
+(`sh:datatype xsd:string`, `sh:maxCount 1` on `clinical:documentType`) and
+`clinical:NarrativeTextSpellingShape` (`sh:targetSubjectsOf` on the two
+undeclared spellings `cascade:narrativeText` and `clinical:content`, `sh:maxCount
+0` on each -- the migration-window signal).
+
+| Fixture | Expect | Scenario |
+|---|---|---|
+| `document-ccda-section-narrative.VALID.ttl` | PASS | The release's target state: one `clinical:narrativeText` (a converted C-CDA section narrative, markup already stripped) and one `clinical:documentType` ("Progress Note"), no legacy spelling. Trips none of the three new shapes. |
+| `document-legacy-narrative-spelling.WARN.ttl` | WARN | The same section text written to **both** `cascade:narrativeText` and `clinical:content`, and to neither canonical spelling -- the pre-release C-CDA importer's actual output. Two `sh:Warning` results from `clinical:NarrativeTextSpellingShape`'s two unioned targets, one per predicate, and no `sh:Violation`. |
+| `document-documenttype-repeated.WARN.ttl` | WARN | Two `clinical:documentType` values on one document (an addendum note whose importer appended a second label rather than replacing the first). One `sh:Warning` from `clinical:DocumentTypeShape`'s own `sh:maxCount 1`, and no `sh:Violation`. Deliberately carries no narrative text of any spelling, to isolate the claim to the `documentType` axis. |
+
+**Not covered, and it is a real gap rather than an oversight.**
+`clinical:NarrativeTextCountShape`'s own `sh:maxCount 1` warning -- a document
+carrying two `clinical:narrativeText` values, the shape's own comment names two
+C-CDA sections sharing one LOINC section code converting onto a single record as
+the scenario -- has no dedicated fixture in this batch.
+
+**Measured on the corpus, and worth recording separately.** Five pre-existing
+document fixtures (`document-two-statuses-two-authors.VALID`,
+`status-clinicaldocument-appended.VALID`,
+`status-clinicaldocument-in-progress.WARN`,
+`status-laboratoryreport-corrected.VALID`,
+`status-laboratoryreport-in-progress.WARN`) are also reached by
+`NarrativeTextCountShape` and `DocumentTypeShape`, since both target the same
+seven classes as the v1.16 status shapes. Each picks up one or two additional
+constraint checks; none trips a warning, since each carries at most one
+`clinical:narrativeText`, no `clinical:documentType` and no legacy spelling.
+
 ## A defect this batch found, and did not paper over
 
 `status-laboratoryreport-in-progress.WARN.ttl` is listed in
@@ -190,3 +230,42 @@ python3 scripts/run_conformance.py --spec-dir <spec@pin> \
 `medication-dates-lisinopril.VALID.ttl` passes under both pins, because the
 release is strictly widening; its count going 55 → 59 is what shows the two new
 property shapes evaluating rather than the fixture merely surviving.
+
+### Verification — the clinical v1.20 narrative and documentType fixtures
+
+Same two-run shape, and only the RED-first half makes the two warning fixtures
+mean anything.
+
+```sh
+# RED first: against the previous pin (spec 735bb57, clinical v1.19), where
+# none of the three new shapes exists.
+python3 scripts/run_conformance.py --spec-dir <spec@735bb57> --allow-spec-drift \
+  --select 'clinical/document-ccda-section-narrative*' \
+  --select 'clinical/document-legacy-narrative-spelling*' \
+  --select 'clinical/document-documenttype-repeated*'
+#   1 passed / 2 failed / 3 total, 140 constraint checks. Both WARN fixtures
+#   report NO_WARNING: nothing on either legacy spelling or a repeated
+#   clinical:documentType is noticed there. The VALID fixture already passes,
+#   at 44 checks, which is what an additive release means for a record
+#   carrying no legacy spelling.
+
+# GREEN: against the pin now named in scripts/SPEC_PIN (clinical v1.20).
+python3 scripts/run_conformance.py --spec-dir <spec@pin> \
+  --select 'clinical/document-ccda-section-narrative*' \
+  --select 'clinical/document-legacy-narrative-spelling*' \
+  --select 'clinical/document-documenttype-repeated*'
+#   3 passed / 0 failed / 3 total, 148 constraint checks: 50 for the VALID
+#   fixture, 46 for the documentType-repeated case, 52 for the legacy-spelling
+#   case.
+```
+
+`document-ccda-section-narrative.VALID.ttl` passes under both pins, because the
+release is strictly widening; its count going 44 → 50 is what shows the two new
+class-targeted shapes evaluating rather than the fixture merely surviving.
+
+Measured across the full 190-fixture pre-existing set at both pins (not merely
+the three new files): 163 passed / 27 failed at 735bb57, 166 passed / 27 failed
+at the new pin, the same 27 `(fixture, reason)` pairs at both. Five pre-existing
+document fixtures pick up one or two additional constraint checks each at the
+new pin (`NarrativeTextCountShape` and `DocumentTypeShape` reach the same seven
+classes the v1.16 status shapes do) and none of them changes verdict.

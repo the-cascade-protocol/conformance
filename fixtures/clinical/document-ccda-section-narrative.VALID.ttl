@@ -1,0 +1,54 @@
+# clinical v1.20 — the canonical narrative spelling, written the way a C-CDA
+# section import path is expected to write it from now on.
+#
+# WHY THIS RECORD. Through v1.19 the reference C-CDA import path wrote a
+# section's narrative text to cascade:narrativeText, which core never defines,
+# and a second time to clinical:content, which clinical never defines either —
+# both predicates sat on nothing a shape targeted. clinical:narrativeText was
+# declared the whole time and both JSON-LD contexts already mapped the short
+# name narrativeText to it; v1.20 restates its comment as the canonical
+# spelling for FHIR Narrative text.div AND C-CDA section text alike, so the
+# same property now names both sources rather than the FHIR one only. This
+# fixture is that migration's target state: one section narrative, markup
+# already stripped by the converter, on the one predicate a reader can rely on.
+#
+# clinical:documentType carries the human-readable label FHIR R4
+# DocumentReference.type.text supplies (clinical:DocumentTypeShape, new in
+# v1.20). It is deliberately NOT the closed cascade:documentType slug: the two
+# properties hold different values (a label a person reads vs. a short slug
+# software branches on) and neither replaces the other.
+#
+# Exactly one clinical:narrativeText and one clinical:documentType, so neither
+# of the two new sh:maxCount 1 Warning shapes (NarrativeTextCountShape,
+# DocumentTypeShape) has anything to report here, and neither legacy spelling
+# (cascade:narrativeText, clinical:content) is present, so
+# NarrativeTextSpellingShape has nothing to report either. All three are new
+# in v1.20 and this fixture's claim is that a document written the way the
+# release now recommends trips none of them.
+#
+# Fully synthetic: invented clinic, clinician, visit and section content.
+
+@prefix cascade: <https://ns.cascadeprotocol.org/core/v1#> .
+@prefix clinical: <https://ns.cascadeprotocol.org/clinical/v1#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<urn:uuid:d0c00116-0000-4000-8000-000000000004> a clinical:ClinicalDocument ;
+    clinical:displayName "Progress Note" ;
+    clinical:documentType "Progress Note" ;
+    clinical:documentDate "2031-04-02"^^xsd:date ;
+    clinical:status "final" ;
+    clinical:documentReferenceStatus "current" ;
+
+    # One C-CDA section narrative, converted to plain text with the source
+    # markup already stripped -- the shape of what a "Plan of Care" section's
+    # text element carries.
+    clinical:narrativeText "Continue lisinopril 20 mg once daily. Increase walking to 30 minutes five days a week as tolerated. Recheck basic metabolic panel and blood pressure in six weeks. Patient verbalized understanding of the plan and voiced no questions at the close of the visit." ;
+
+    clinical:documentAuthorName "Dara Fennimore, MD" ;
+    clinical:fhirResourceId "DocumentReference/dr-56410" ;
+    clinical:fhirResourceType "DocumentReference" ;
+    clinical:importedAt "2031-04-05T09:40:12-05:00"^^xsd:dateTime ;
+    clinical:sourceEHR "Meridian Health System" ;
+    cascade:sourceIdentity "org:meridian" ;
+    cascade:dataProvenance cascade:EHRVerified ;
+    cascade:schemaVersion "1.4" .

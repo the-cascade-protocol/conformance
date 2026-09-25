@@ -10,6 +10,61 @@
 # VOCAB_VERSIONS line below, run `make -C . conformance` (or
 # `scripts/run_conformance.py`), and record the resulting counts in the PR.
 
+# PINNED at 2162718, the MERGE commit of the-cascade-protocol/spec PR #72 on
+# `main` (clinical v1.20: the clinical:narrativeText comment restated as the
+# canonical spelling for FHIR text.div and C-CDA section text alike, and the
+# new clinical:documentType, a human-readable document-type label distinct
+# from the closed-slug cascade:documentType; core v3.10, health v2.11,
+# coverage v1.6 unchanged). Tag `vocab/clinical-v1.20` points at this commit.
+# It replaces the pin below, 735bb57.
+#
+# WHAT MOVING THE PIN DID. Three new shapes in clinical.shapes.ttl, all
+# sh:Warning per the core v3.5 ratchet: clinical:NarrativeTextCountShape
+# (sh:maxCount 1 on clinical:narrativeText, relaxed from the sh:Violation it
+# carried on ClinicalDocumentShape through v1.19), clinical:DocumentTypeShape
+# (sh:datatype xsd:string, sh:maxCount 1 on the new clinical:documentType) and
+# clinical:NarrativeTextSpellingShape (sh:targetSubjectsOf cascade:narrativeText
+# and sh:targetSubjectsOf clinical:content, sh:maxCount 0 on each -- the
+# migration-window signal for the two undeclared spellings a C-CDA import path
+# wrote before this release). All three target the same seven document
+# classes the v1.16 status shapes do.
+#
+# Three fixtures added in fixtures/clinical/: document-ccda-section-narrative
+# .VALID (the release's target state -- one clinical:narrativeText, one
+# clinical:documentType, no legacy spelling), document-legacy-narrative
+# -spelling.WARN (the same text on both cascade:narrativeText and
+# clinical:content, no clinical:narrativeText -- the pre-release importer's
+# actual output; two sh:Warning results, zero sh:Violation) and
+# document-documenttype-repeated.WARN (two clinical:documentType values; one
+# sh:Warning from DocumentTypeShape's own sh:maxCount 1, zero sh:Violation).
+# See fixtures/clinical/INVENTORY.md.
+#
+# Measured on this branch's fixture set (193 fixtures) against both revisions:
+#   735bb57 (old pin): 163 passed / 27 failed / 0 skipped / 190 total, 64,847
+#     constraint checks.
+#   2162718 (new pin): 166 passed / 27 failed / 0 skipped / 193 total, 65,003
+#     constraint checks.
+#
+# ZERO pre-existing verdicts change. Compared entry by entry across both runs
+# (outcome, reason and constraint-check count), 0 of the 190 pre-existing
+# fixtures differ in outcome or reason. Five of them (the document and
+# document-subtype fixtures the two new class-targeted shapes also reach) pick
+# up one or two additional constraint checks each -- 8 total -- and none trips
+# a warning. The 27 that fail at 2162718 are byte-identical, as (fixture,
+# reason) pairs, to the 27 already enumerated in KNOWN_FAILURES.json, whose
+# specPin is advanced to 2162718 in this same commit, so the ratchet holds.
+#
+# RED-first, against 735bb57 with --allow-spec-drift, selecting only the three
+# new files: 1 passed / 2 failed / 3 total, 140 constraint checks. Both WARN
+# fixtures report NO_WARNING there; the VALID fixture already passes, at 44
+# checks, which is what an additive release means for a record with no legacy
+# spelling. GREEN at 2162718: 3 passed / 0 failed / 3 total, 148 constraint
+# checks (50 / 46 / 52).
+#
+# Verified against an isolated detached worktree of spec at 2162718 (not the
+# shared sibling checkout at ../spec), separate from a second isolated
+# worktree at 735bb57 used only for the comparison run above.
+#
 # PINNED at 735bb57, the MERGE commit of the-cascade-protocol/spec PR #70 on
 # `main` (health v2.11, comment hygiene; core v3.10, clinical v1.19, coverage
 # v1.6 unchanged). Tag `vocab/health-v2.11` points at this commit (pushed
@@ -273,5 +328,5 @@
 # specPin is advanced to this same SHA in this commit, so the ratchet holds.
 
 repo=https://github.com/the-cascade-protocol/spec
-commit=735bb57b62f22a4e3dab24aa6cc7e0495ec57146
-vocab=core=3.10 health=2.11 clinical=1.19 coverage=1.6 checkup=3.3 pots=1.4
+commit=21627180042e3b88c41336e5e0692d098e2ba11b
+vocab=core=3.10 health=2.11 clinical=1.20 coverage=1.6 checkup=3.3 pots=1.4
