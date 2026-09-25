@@ -29,20 +29,24 @@
 # wrote before this release). All three target the same seven document
 # classes the v1.16 status shapes do.
 #
-# Three fixtures added in fixtures/clinical/: document-ccda-section-narrative
+# Four fixtures added in fixtures/clinical/: document-ccda-section-narrative
 # .VALID (the release's target state -- one clinical:narrativeText, one
 # clinical:documentType, no legacy spelling), document-legacy-narrative
 # -spelling.WARN (the same text on both cascade:narrativeText and
 # clinical:content, no clinical:narrativeText -- the pre-release importer's
-# actual output; two sh:Warning results, zero sh:Violation) and
+# actual output; two sh:Warning results, zero sh:Violation),
 # document-documenttype-repeated.WARN (two clinical:documentType values; one
-# sh:Warning from DocumentTypeShape's own sh:maxCount 1, zero sh:Violation).
-# See fixtures/clinical/INVENTORY.md.
+# sh:Warning from DocumentTypeShape's own sh:maxCount 1, zero sh:Violation)
+# and document-narrative-text-repeated.WARN (two clinical:narrativeText
+# values, modelling the exact scenario NarrativeTextCountShape's own comment
+# names -- two C-CDA sections sharing one LOINC section code converting onto
+# one section record; one sh:Warning from NarrativeTextCountShape's own
+# sh:maxCount 1, zero sh:Violation). See fixtures/clinical/INVENTORY.md.
 #
-# Measured on this branch's fixture set (193 fixtures) against both revisions:
+# Measured on this branch's fixture set (194 fixtures) against both revisions:
 #   735bb57 (old pin): 163 passed / 27 failed / 0 skipped / 190 total, 64,847
 #     constraint checks.
-#   2162718 (new pin): 166 passed / 27 failed / 0 skipped / 193 total, 65,003
+#   2162718 (new pin): 167 passed / 27 failed / 0 skipped / 194 total, 65,053
 #     constraint checks.
 #
 # ZERO pre-existing verdicts change. Compared entry by entry across both runs
@@ -54,12 +58,18 @@
 # reason) pairs, to the 27 already enumerated in KNOWN_FAILURES.json, whose
 # specPin is advanced to 2162718 in this same commit, so the ratchet holds.
 #
-# RED-first, against 735bb57 with --allow-spec-drift, selecting only the three
-# new files: 1 passed / 2 failed / 3 total, 140 constraint checks. Both WARN
-# fixtures report NO_WARNING there; the VALID fixture already passes, at 44
-# checks, which is what an additive release means for a record with no legacy
-# spelling. GREEN at 2162718: 3 passed / 0 failed / 3 total, 148 constraint
-# checks (50 / 46 / 52).
+# RED-first, against 735bb57 with --allow-spec-drift, selecting only the four
+# new files: 1 passed / 3 failed / 4 total, 188 constraint checks. The two
+# spelling/documentType WARN fixtures report NO_WARNING there; the VALID
+# fixture already passes, at 44 checks, which is what an additive release
+# means for a record with no legacy spelling. document-narrative-text-repeated
+# .WARN is RED there in the sharper way this constraint's relaxation is
+# actually about: it is REJECTED, not merely unnoticed -- reported VIOLATIONS,
+# clinical:ClinicalDocumentShape's own sh:maxCount 1 on clinical:narrativeText
+# firing at its default severity, because through v1.19 this constraint lived
+# on ClinicalDocumentShape itself rather than on a separate Warning-severity
+# shape. GREEN at 2162718: 4 passed / 0 failed / 4 total, 198 constraint
+# checks (50 / 46 / 52 / 50).
 #
 # Verified against an isolated detached worktree of spec at 2162718 (not the
 # shared sibling checkout at ../spec), separate from a second isolated

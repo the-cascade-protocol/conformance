@@ -261,15 +261,28 @@ clinical=1.20
 #   .WARN (the same text written to BOTH cascade:narrativeText and
 #   clinical:content, no clinical:narrativeText -- the pre-release importer's
 #   actual output; two sh:Warning results, one per predicate, zero
-#   sh:Violation) and clinical/document-documenttype-repeated.WARN (two
+#   sh:Violation), clinical/document-documenttype-repeated.WARN (two
 #   clinical:documentType values on one document; one sh:Warning from
-#   DocumentTypeShape's own sh:maxCount 1, zero sh:Violation).
+#   DocumentTypeShape's own sh:maxCount 1, zero sh:Violation) and
+#   clinical/document-narrative-text-repeated.WARN (two clinical:narrativeText
+#   values on one document, modelling the exact scenario
+#   NarrativeTextCountShape's own comment names -- two C-CDA sections sharing
+#   one LOINC section code converting onto one section record; one
+#   sh:Warning from NarrativeTextCountShape's own sh:maxCount 1, zero
+#   sh:Violation).
 #   RED-first, measured against the previous pin (spec 735bb57, clinical
-#   1.19), where none of the three shapes exists: both WARN fixtures report
-#   NO_WARNING (1 passed / 2 failed / 3 total, 140 constraint checks); the
-#   VALID fixture already passes there at 44 checks, which is what an
-#   additive release means for a record carrying no legacy spelling.
-#   GREEN at this pin: all three pass, 148 checks total (50 / 46 / 52
+#   1.19), where none of the three shapes exists: both original WARN
+#   fixtures report NO_WARNING (1 passed / 2 failed / 3 total, 140 constraint
+#   checks); the VALID fixture already passes there at 44 checks, which is
+#   what an additive release means for a record carrying no legacy spelling.
+#   document-narrative-text-repeated.WARN is RED there in the sharper way this
+#   shape's relaxation is about: it is REJECTED, not merely unnoticed --
+#   clinical:ClinicalDocumentShape's own sh:maxCount 1 on
+#   clinical:narrativeText fires at sh:Violation (VIOLATIONS, 48 constraint
+#   checks), because through v1.19 this constraint lived on
+#   ClinicalDocumentShape itself at its default severity rather than on a
+#   separate Warning-severity shape.
+#   GREEN at this pin: all four pass, 198 checks total (50 / 46 / 52 / 50
 #   respectively); the VALID fixture's count rising 44 -> 50 is the two new
 #   class-targeted shapes actually evaluating, not the fixture merely
 #   surviving.
@@ -284,11 +297,7 @@ clinical=1.20
 #   Compared entry by entry across both pins (outcome, reason and constraint-
 #   check count) the pre-existing 190 fixtures' 27 failures are the same 27
 #   (fixture, reason) pairs at both; suite goes 163/190 (64,847 checks) to
-#   166/193 (65,003 checks).
-#   NOT covered: NarrativeTextCountShape's own sh:maxCount 1 warning (a
-#   document carrying two clinical:narrativeText values -- the two-C-CDA-
-#   sections-sharing-one-LOINC-code scenario clinical.shapes.ttl's own comment
-#   describes) has no dedicated fixture in this batch.
+#   167/194 (65,053 checks).
 # clinical=1.19: NO new term. One rdfs:domain clinical:Condition DROPPED, from
 #   clinical:abatementDate, so it can be written on health:ConditionRecord.
 #   Four comment rewrites naming the canonical spellings. Neither the domain

@@ -1,0 +1,66 @@
+# clinical v1.20 — WARNING. Two clinical:narrativeText values on one document.
+#
+# WHY THIS EXACT RECORD, AND WHY IT IS THE CHANGE MOST WORTH PINNING. This is
+# not an invented edge case; it is the scenario clinical:NarrativeTextCountShape's
+# own comment in clinical.shapes.ttl names as why the constraint had to be
+# relaxed. A C-CDA document carrying two sections that share one LOINC section
+# code converts onto ONE section record, because that record is keyed on the
+# document, the section code and the source, and the identity scheme does not
+# yet distinguish the two sections. Both narratives land on
+# clinical:narrativeText, correctly, under the identity Cascade has today. Here
+# the shared code is 51847-2 (Assessment and Plan): an addendum note filed a
+# second "Assessment and Plan" section rather than replacing the first, and the
+# converter has no way to tell the two apart.
+#
+# THROUGH v1.19 THIS WAS sh:Violation, ON clinical:ClinicalDocumentShape
+# ITSELF. It never fired, because the narrative was written under an
+# undeclared spelling (cascade:narrativeText / clinical:content) that no shape
+# reached. clinical:narrativeText being written for the first time, per the
+# rest of this release, is what makes the constraint reachable at all -- and
+# rejecting this record outright would have meant re-keying the section
+# record and re-minting every existing narrative node, so v1.20 reports the
+# count instead of rejecting it. sh:Warning is the shape's answer, not a
+# general policy: it applies to this one constraint, on this one property,
+# because of what re-keying would cost, not because every constraint this
+# release touches was softened.
+#
+# WHAT THIS FIXTURE ASSERTS, AND WHAT IT DELIBERATELY DOES NOT. It asserts
+# that clinical:NarrativeTextCountShape's own sh:maxCount 1 fires as a single
+# sh:Warning naming clinical:narrativeText. It asserts equally that NOTHING
+# REJECTS the record. clinical:documentType and the two legacy narrative
+# spellings are left out entirely, so this fixture is evidence about the
+# count constraint alone and not about DocumentTypeShape or
+# NarrativeTextSpellingShape.
+#
+# RED, NOT SILENT, AGAINST THE PREVIOUS PIN. Against clinical v1.19, this same
+# record is REJECTED: clinical:ClinicalDocumentShape's own sh:maxCount 1 on
+# clinical:narrativeText fires at its default severity, sh:Violation. A
+# .WARN.ttl fixture asserted here before v1.20 would have failed with
+# VIOLATIONS, not passed -- the polarity this fixture claims is new with this
+# release, not merely newly exercised.
+#
+# Fully synthetic: invented clinic, clinician, visit and section content.
+
+@prefix cascade: <https://ns.cascadeprotocol.org/core/v1#> .
+@prefix clinical: <https://ns.cascadeprotocol.org/clinical/v1#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<urn:uuid:d0c00116-0000-4000-8000-000000000007> a clinical:ClinicalDocument ;
+    clinical:displayName "Progress Note" ;
+    clinical:documentDate "2031-04-02"^^xsd:date ;
+    clinical:status "final" ;
+    clinical:documentReferenceStatus "current" ;
+
+    # Two "Assessment and Plan" sections (LOINC 51847-2), converted onto one
+    # section record because the record's identity does not yet separate them.
+    clinical:narrativeText "Assessment and Plan: Hypertension, well controlled on lisinopril 20 mg daily. Continue current regimen and recheck blood pressure in six weeks." ;
+    clinical:narrativeText "Assessment and Plan (addendum): Patient called after the visit reporting occasional lightheadedness on standing. Advised to rise slowly and to report recurrence; no medication change made pending recheck." ;
+
+    clinical:documentAuthorName "Dara Fennimore, MD" ;
+    clinical:fhirResourceId "DocumentReference/dr-56413" ;
+    clinical:fhirResourceType "DocumentReference" ;
+    clinical:importedAt "2031-04-05T09:40:12-05:00"^^xsd:dateTime ;
+    clinical:sourceEHR "Meridian Health System" ;
+    cascade:sourceIdentity "org:meridian" ;
+    cascade:dataProvenance cascade:EHRVerified ;
+    cascade:schemaVersion "1.4" .
