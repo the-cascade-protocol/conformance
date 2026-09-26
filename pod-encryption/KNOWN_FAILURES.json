@@ -1,0 +1,46 @@
+{
+  "$comment": "Known failures of the Pod encryption vectors, per implementation. Same rules as the repository's top-level KNOWN_FAILURES.json, applied by scripts/check_pod_encryption.py instead of scripts/check_baseline.py: entries are keyed on (vector, reason) for the implementation the harness drives; a failure that is not listed fails the run AND a listed failure that starts passing fails the run, so the list can only shrink deliberately. Entries marked measured: false are for an implementation this harness cannot run (it is not public); they were derived by reading its code, are reported but not ratcheted, and must be confirmed by that implementation's own test suite running these vectors.",
+  "measuredWith": "cascade-cli main at 53cfa7f (the-cascade-protocol/cascade-cli#117 merged): 92 passed, 0 failed; no cascade-cli entries remain",
+  "entries": [
+    {
+      "vector": "N-026",
+      "implementation": "rust (Cascade desktop application)",
+      "reason": "ACCEPTED",
+      "ownedBy": "desktop application",
+      "detail": "By code inspection: a 1.1 wrap with no label member is read as label null (spec 4.3 requires the member).",
+      "measured": false
+    },
+    {
+      "vector": "N-027",
+      "implementation": "rust (Cascade desktop application)",
+      "reason": "ACCEPTED",
+      "ownedBy": "desktop application",
+      "detail": "By code inspection: a 1.1 wrap with no createdAt member is read as createdAt null (spec 4.3 requires the member).",
+      "measured": false
+    },
+    {
+      "vector": "N-030",
+      "implementation": "rust (Cascade desktop application)",
+      "reason": "ACCEPTED",
+      "ownedBy": "desktop application",
+      "detail": "By code inspection: an unimplemented 1.1 wrap with no label or createdAt is accepted (spec 4.3).",
+      "measured": false
+    },
+    {
+      "vector": "A-002",
+      "implementation": "rust (Cascade desktop application)",
+      "reason": "REFUSED",
+      "ownedBy": "desktop application",
+      "detail": "By code inspection: members of an unimplemented wrap (kdf, kdfParams, wrappedDek) are type-checked, so an unexpected shape refuses the header (spec 4.3 says they are not read).",
+      "measured": false
+    },
+    {
+      "vector": "A-013",
+      "implementation": "rust (Cascade desktop application)",
+      "reason": "REFUSED",
+      "ownedBy": "desktop application",
+      "detail": "By code inspection: a 1.0 wrap whose label is not a string refuses the header; 1.0 defines no label and unknown members are ignored (spec 4.4).",
+      "measured": false
+    }
+  ]
+}

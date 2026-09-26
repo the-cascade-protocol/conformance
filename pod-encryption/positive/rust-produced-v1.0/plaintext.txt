@@ -1,0 +1,3 @@
+@prefix oa: <http://www.w3.org/ns/oa#> .
+# Conformance fixture. No PHI: this text exists only to be encrypted.
+<urn:cascade:conformance:2> a oa:Annotation .

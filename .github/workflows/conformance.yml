@@ -90,6 +90,24 @@ jobs:
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
 
+  pod-encryption-vectors:
+    name: pod encryption vectors are generated, not hand-edited
+    # Standard library only. Regenerates every header vector and
+    # pod-encryption/vectors.json in memory and fails if the committed files
+    # differ, are missing, or include one the generator did not write. Running
+    # the vectors against an implementation needs a pinned build of it and is
+    # not part of CI yet (see pod-encryption/README.md).
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Check the generated vectors
+        run: python scripts/gen_pod_encryption_vectors.py --check
+
   literal-fidelity:
     name: typed-literal fidelity (report-only)
     runs-on: ubuntu-latest

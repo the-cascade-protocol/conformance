@@ -1,0 +1,32 @@
+{
+  "algorithm": "aes-256-gcm",
+  "version": "1.1",
+  "wraps": [
+    {
+      "by": "passphrase",
+      "createdAt": "2026-09-23T17:04:11.123Z",
+      "kdf": "argon2id",
+      "kdfParams": {
+        "m": 65536,
+        "p": 1,
+        "salt": "cnVzdC12MTEtd3JhcC1BIQ==",
+        "t": 3
+      },
+      "label": "primary",
+      "wrappedDek": "JNnhTgzAqfKcgy1rXXcrxxobJJabpo9rDUi2rGGwwbc7NhMjMeHt3bAcKZ2mGhKvpejDOopymdgi8EWh"
+    },
+    {
+      "by": "passphrase",
+      "createdAt": "2026-09-23T17:04:11.123Z",
+      "kdf": "argon2id",
+      "kdfParams": {
+        "m": 65536,
+        "p": 1,
+        "salt": "cnVzdC12MTEtd3JhcC1CIQ==",
+        "t": 3
+      },
+      "label": null,
+      "wrappedDek": "J4KC4VFcHKWLXlEepJ8Pw7qa2LlK8/qePn8EzisK59dyFO0AF9MiKfFbXInmEBN2p5oUfJgefD4lxyCb"
+    }
+  ]
+}

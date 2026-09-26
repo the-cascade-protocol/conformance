@@ -1,0 +1,766 @@
+{
+  "description": "Cross-implementation vectors for the Cascade Pod encryption format.",
+  "spec": "the-cascade-protocol/spec, pod-encryption.md, version 1.0",
+  "generatedBy": "scripts/gen_pod_encryption_vectors.py (do not edit by hand; run it with --write)",
+  "testOnlyKeys": "Every passphrase in this file is a TEST-ONLY value that protects nothing but these synthetic fixtures. Never use one for a real Pod.",
+  "outcomes": {
+    "malformed": "refused before any key derivation: the header breaks a rule or a limit",
+    "unsupported-version": "refused before any key derivation: a header version this reader does not know",
+    "cannot-open": "refused before any key derivation: valid, but no wrap of a kind the reader implements",
+    "opened": "the header validates and the given key opens it",
+    "not-followed": "a symbolic link inside the Pod is refused or skipped; its target is never read"
+  },
+  "howToRun": "For a negative or accept vector: make an empty directory, write the header bytes to settings/encryption.json inside it, and open it as a Pod with tryWith as the key. For a file system vector: build the described layout in a scratch directory. scripts/check_pod_encryption.py does this for an implementation's command-line interface.",
+  "positive": [
+    {
+      "id": "P-001",
+      "path": "positive/ts-produced-v1.0",
+      "layout": "envelope",
+      "headerVersion": "1.0",
+      "producedBy": "cascade-cli (TypeScript)",
+      "passphrases": [
+        "conformance-passphrase-do-not-reuse"
+      ],
+      "proves": "a reader opens a 1.0 header and a sealed resource written by the TypeScript implementation"
+    },
+    {
+      "id": "P-002",
+      "path": "positive/rust-produced-v1.0",
+      "layout": "envelope",
+      "headerVersion": "1.0",
+      "producedBy": "an independent Rust implementation",
+      "passphrases": [
+        "conformance-passphrase-do-not-reuse"
+      ],
+      "proves": "a reader opens a 1.0 header and a sealed resource written by the Rust implementation"
+    },
+    {
+      "id": "P-003",
+      "path": "positive/rust-produced-v1.1/single",
+      "layout": "envelope",
+      "headerVersion": "1.1",
+      "producedBy": "an independent Rust implementation",
+      "passphrases": [
+        "copper velvet orbit lantern mossy quartz"
+      ],
+      "proves": "a 1.1 header with one passphrase wrap carrying its own KDF parameters"
+    },
+    {
+      "id": "P-004",
+      "path": "positive/rust-produced-v1.1/two-wrap",
+      "layout": "envelope",
+      "headerVersion": "1.1",
+      "producedBy": "an independent Rust implementation",
+      "passphrases": [
+        "copper velvet orbit lantern mossy quartz",
+        "birch meadow anchor violet copper lantern"
+      ],
+      "proves": "two wraps of one data key, each with its own salt; either key opens it, and the second is reached by trying wraps in order"
+    },
+    {
+      "id": "P-005",
+      "path": "positive/ts-produced-v1.1/pod",
+      "layout": "pod",
+      "headerVersion": "1.1",
+      "producedBy": "cascade-cli (TypeScript): an encrypted Pod created under one key, one synthetic record imported, then re-wrapped under a second key",
+      "passphrases": [
+        "birch meadow anchor violet copper lantern"
+      ],
+      "mustNotOpenWith": [
+        "copper velvet orbit lantern mossy quartz"
+      ],
+      "proves": "a whole Pod as written: every file sealed except the plaintext-by-design ones, a 1.0 header migrated to 1.1 by a re-wrap, the new key opens it and the old key no longer does"
+    }
+  ],
+  "vectors": [
+    {
+      "id": "N-001",
+      "header": "negative/N-001-not-json.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 4.1",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "truncated JSON"
+    },
+    {
+      "id": "N-002",
+      "header": "negative/N-002-top-level-array.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 4.1",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "the top-level value is not an object"
+    },
+    {
+      "id": "N-003",
+      "header": "negative/N-003-byte-order-mark.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 5.1",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "a UTF-8 byte order mark before an otherwise valid header"
+    },
+    {
+      "id": "N-004",
+      "header": "negative/N-004-invalid-utf8.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 5.1",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "a byte 0xFF (never valid UTF-8) inside the label of an otherwise valid header"
+    },
+    {
+      "id": "N-005",
+      "header": "negative/N-005-header-65537-bytes.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 5.1, 5.3",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "a valid header padded with whitespace to one byte over the limit"
+    },
+    {
+      "id": "N-006",
+      "header": "negative/N-006-version-missing.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 4.2, 5.4",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "no `version` member"
+    },
+    {
+      "id": "N-007",
+      "header": "negative/N-007-version-not-string.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 4.2, 5.4",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "`version` written as a number"
+    },
+    {
+      "id": "N-008",
+      "header": "negative/N-008-version-unknown.json",
+      "expect": "unsupported-version",
+      "spec": "pod-encryption.md section 4.2, 5.4",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "a version this reader does not know"
+    },
+    {
+      "id": "N-009",
+      "header": "negative/N-009-version-near-miss.json",
+      "expect": "unsupported-version",
+      "spec": "pod-encryption.md section 4.2",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "`1.10` is not `1.1`: versions are compared as exact strings"
+    },
+    {
+      "id": "N-010",
+      "header": "negative/N-010-version-padded.json",
+      "expect": "unsupported-version",
+      "spec": "pod-encryption.md section 4.2, 4.5",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "a leading space: never trimmed"
+    },
+    {
+      "id": "N-011",
+      "header": "negative/N-011-algorithm-other.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 4.2",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "an algorithm other than aes-256-gcm"
+    },
+    {
+      "id": "N-012",
+      "header": "negative/N-012-algorithm-case.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 4.2, 4.5",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "names are case-sensitive"
+    },
+    {
+      "id": "N-013",
+      "header": "negative/N-013-algorithm-missing.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 4.2",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "no `algorithm` member"
+    },
+    {
+      "id": "N-014",
+      "header": "negative/N-014-wraps-missing.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 4.2",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "no `wraps` member"
+    },
+    {
+      "id": "N-015",
+      "header": "negative/N-015-wraps-empty-v1.1.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 4.2, 6.2",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "an empty wraps list, version 1.1"
+    },
+    {
+      "id": "N-016",
+      "header": "negative/N-016-wraps-empty-v1.0.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 4.2, 4.4",
+      "tryWith": "conformance-passphrase-do-not-reuse",
+      "description": "an empty wraps list, version 1.0"
+    },
+    {
+      "id": "N-017",
+      "header": "negative/N-017-wraps-not-array.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 4.2",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "`wraps` is an object, not a list"
+    },
+    {
+      "id": "N-018",
+      "header": "negative/N-018-wrap-not-object.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 4.2",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "a wrap that is a string"
+    },
+    {
+      "id": "N-019",
+      "header": "negative/N-019-by-empty.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 4.3",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "a wrap with `by` \"\" is malformed, not an unknown kind to skip"
+    },
+    {
+      "id": "N-020",
+      "header": "negative/N-020-by-missing.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 4.3",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "a wrap with no `by`"
+    },
+    {
+      "id": "N-021",
+      "header": "negative/N-021-by-not-string.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 4.3",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "a wrap whose `by` is a number"
+    },
+    {
+      "id": "N-022",
+      "header": "negative/N-022-only-unimplemented-wraps.json",
+      "expect": "cannot-open",
+      "spec": "pod-encryption.md section 4.3, 5.4",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "valid, but no wrap of a kind the reader implements"
+    },
+    {
+      "id": "N-023",
+      "header": "negative/N-023-v1.1-top-level-kdfParams.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 4.3",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "1.1 must not carry a top-level kdfParams"
+    },
+    {
+      "id": "N-024",
+      "header": "negative/N-024-v1.1-top-level-kdf.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 4.3",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "1.1 must not carry a top-level kdf"
+    },
+    {
+      "id": "N-025",
+      "header": "negative/N-025-v1.1-top-level-kdfParams-null.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 4.3",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "presence, not value: a null top-level kdfParams is still refused"
+    },
+    {
+      "id": "N-026",
+      "header": "negative/N-026-v1.1-label-missing.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 4.3",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "`label` is required on every 1.1 wrap (null is allowed, absent is not)"
+    },
+    {
+      "id": "N-027",
+      "header": "negative/N-027-v1.1-createdAt-missing.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 4.3",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "`createdAt` is required on every 1.1 wrap"
+    },
+    {
+      "id": "N-028",
+      "header": "negative/N-028-v1.1-label-not-string.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 4.3",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "a label that is a number"
+    },
+    {
+      "id": "N-029",
+      "header": "negative/N-029-v1.1-createdAt-not-string.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 4.3",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "a createdAt that is a number"
+    },
+    {
+      "id": "N-030",
+      "header": "negative/N-030-v1.1-unimplemented-wrap-label-missing.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 4.3",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "the three common members are required on a wrap of any kind"
+    },
+    {
+      "id": "N-031",
+      "header": "negative/N-031-v1.1-no-kdf.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 4.3",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "a passphrase wrap without its own kdf"
+    },
+    {
+      "id": "N-032",
+      "header": "negative/N-032-v1.1-no-kdfParams.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 4.3",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "a passphrase wrap without its own kdfParams"
+    },
+    {
+      "id": "N-033",
+      "header": "negative/N-033-v1.1-kdfParams-not-object.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 4.3",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "kdfParams is a string"
+    },
+    {
+      "id": "N-034",
+      "header": "negative/N-034-v1.1-no-wrappedDek.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 4.3",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "a passphrase wrap with nothing to open"
+    },
+    {
+      "id": "N-035",
+      "header": "negative/N-035-v1.0-no-top-level-kdf.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 4.4",
+      "tryWith": "conformance-passphrase-do-not-reuse",
+      "description": "1.0 requires the top-level kdf"
+    },
+    {
+      "id": "N-036",
+      "header": "negative/N-036-v1.0-no-top-level-kdfParams.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 4.4",
+      "tryWith": "conformance-passphrase-do-not-reuse",
+      "description": "1.0 requires the top-level kdfParams"
+    },
+    {
+      "id": "N-037",
+      "header": "negative/N-037-v1.0-unused-kdfParams-outside-limits.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 4.4, 5.3",
+      "tryWith": "conformance-passphrase-do-not-reuse",
+      "description": "1.0 top-level parameters are held to the limits even when no wrap uses them"
+    },
+    {
+      "id": "N-038",
+      "header": "negative/N-038-v1.0-wrappedDek-59-bytes.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 4.4, 5.3",
+      "tryWith": "conformance-passphrase-do-not-reuse",
+      "description": "the 1.0 wrap is held to the same wrappedDek length"
+    },
+    {
+      "id": "N-039",
+      "header": "negative/N-039-kdf-argon2i.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 5.3",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "a KDF other than argon2id"
+    },
+    {
+      "id": "N-040",
+      "header": "negative/N-040-t-zero.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 5.3",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "t below 1"
+    },
+    {
+      "id": "N-041",
+      "header": "negative/N-041-t-seven.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 5.3",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "t above 6"
+    },
+    {
+      "id": "N-042",
+      "header": "negative/N-042-p-zero.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 5.3",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "p below 1"
+    },
+    {
+      "id": "N-043",
+      "header": "negative/N-043-p-five.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 5.3",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "p above 4"
+    },
+    {
+      "id": "N-044",
+      "header": "negative/N-044-m-below-8p.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 5.3",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "m below 8 * p"
+    },
+    {
+      "id": "N-045",
+      "header": "negative/N-045-m-above-max.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 5.3",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "m one KiB above 128 MiB"
+    },
+    {
+      "id": "N-046",
+      "header": "negative/N-046-t-negative.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 5.3",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "a negative cost"
+    },
+    {
+      "id": "N-047",
+      "header": "negative/N-047-passphrase-wraps-7.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 5.3",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "seven passphrase wraps"
+    },
+    {
+      "id": "N-048",
+      "header": "negative/N-048-wraps-17.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 5.3",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "seventeen wraps of any kind"
+    },
+    {
+      "id": "N-049",
+      "header": "negative/N-049-bad-later-wrap.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 5.2, 5.3",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "the first wrap is valid and opens; a later wrap is outside the limits, so the whole header is refused"
+    },
+    {
+      "id": "N-050",
+      "header": "negative/N-050-t-string.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 4.5",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "a cost written as a string"
+    },
+    {
+      "id": "N-051",
+      "header": "negative/N-051-t-fraction.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 4.5",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "3.0: an integer value, not an integer literal"
+    },
+    {
+      "id": "N-052",
+      "header": "negative/N-052-m-exponent.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 4.5",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "an exponent"
+    },
+    {
+      "id": "N-053",
+      "header": "negative/N-053-p-exponent.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 4.5",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "1e0 denotes 1 and is still refused"
+    },
+    {
+      "id": "N-054",
+      "header": "negative/N-054-salt-15-bytes.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 4.5, 5.3",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "a 15-byte salt"
+    },
+    {
+      "id": "N-055",
+      "header": "negative/N-055-salt-17-bytes.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 4.5, 5.3",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "a 17-byte salt"
+    },
+    {
+      "id": "N-056",
+      "header": "negative/N-056-salt-unpadded.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 4.5",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "padding removed"
+    },
+    {
+      "id": "N-057",
+      "header": "negative/N-057-salt-leading-space.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 4.5",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "never trimmed"
+    },
+    {
+      "id": "N-058",
+      "header": "negative/N-058-salt-embedded-newline.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 4.5",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "a line break inside the value"
+    },
+    {
+      "id": "N-059",
+      "header": "negative/N-059-salt-url-safe.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 4.5",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "the URL-safe alphabet (a different salt, so a reader that accepts it fails the tag instead)"
+    },
+    {
+      "id": "N-060",
+      "header": "negative/N-060-salt-nonzero-pad-bits.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 4.5",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "non-canonical: unused bits in the last character are not zero"
+    },
+    {
+      "id": "N-061",
+      "header": "negative/N-061-wrappedDek-59-bytes.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 4.5, 5.3",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "one byte short"
+    },
+    {
+      "id": "N-062",
+      "header": "negative/N-062-wrappedDek-61-bytes.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 4.5, 5.3",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "one byte long"
+    },
+    {
+      "id": "N-063",
+      "header": "negative/N-063-wrappedDek-trailing-space.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 4.5",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "never trimmed"
+    },
+    {
+      "id": "N-064",
+      "header": "negative/N-064-wrappedDek-not-string.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 4.3",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "a number"
+    },
+    {
+      "id": "A-001",
+      "header": "accept/A-001-unknown-kind-skipped.json",
+      "expect": "opened",
+      "spec": "pod-encryption.md section 4.3",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "a reserved kind before the passphrase wrap is skipped"
+    },
+    {
+      "id": "A-002",
+      "header": "accept/A-002-unknown-kind-members-not-interpreted.json",
+      "expect": "opened",
+      "spec": "pod-encryption.md section 4.3",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "members of an unimplemented wrap other than by, label and createdAt are not read or validated"
+    },
+    {
+      "id": "A-003",
+      "header": "accept/A-003-near-miss-by-is-unknown-kind.json",
+      "expect": "opened",
+      "spec": "pod-encryption.md section 4.3, 4.5",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "\" passphrase\" is an unknown kind, skipped, not a malformed passphrase wrap"
+    },
+    {
+      "id": "A-004",
+      "header": "accept/A-004-createdAt-free-text.json",
+      "expect": "opened",
+      "spec": "pod-encryption.md section 4.3",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "createdAt is checked for type only, never parsed"
+    },
+    {
+      "id": "A-005",
+      "header": "accept/A-005-label-null.json",
+      "expect": "opened",
+      "spec": "pod-encryption.md section 4.3",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "a null label"
+    },
+    {
+      "id": "A-006",
+      "header": "accept/A-006-duplicate-salts.json",
+      "expect": "opened",
+      "spec": "pod-encryption.md section 5.5",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "readers accept two wraps with the same salt (writers never produce one)"
+    },
+    {
+      "id": "A-007",
+      "header": "accept/A-007-unknown-members-ignored.json",
+      "expect": "opened",
+      "spec": "pod-encryption.md section 4.1",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "unknown top-level and wrap members are ignored"
+    },
+    {
+      "id": "A-008",
+      "header": "accept/A-008-member-order-and-whitespace.json",
+      "expect": "opened",
+      "spec": "pod-encryption.md section 4.1",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "member order and insignificant whitespace do not matter"
+    },
+    {
+      "id": "A-009",
+      "header": "accept/A-009-header-65536-bytes.json",
+      "expect": "opened",
+      "spec": "pod-encryption.md section 5.1, 5.3",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "a valid header padded to exactly the limit"
+    },
+    {
+      "id": "A-010",
+      "header": "accept/A-010-six-passphrase-wraps.json",
+      "expect": "opened",
+      "spec": "pod-encryption.md section 5.3",
+      "tryWith": "birch meadow anchor violet copper lantern",
+      "description": "six passphrase wraps, the last one opening: at the limit, and every wrap is tried in order"
+    },
+    {
+      "id": "A-011",
+      "header": "accept/A-011-sixteen-wraps.json",
+      "expect": "opened",
+      "spec": "pod-encryption.md section 5.3",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "sixteen wraps of any kind"
+    },
+    {
+      "id": "A-012",
+      "header": "accept/A-012-v1.0-two-passphrase-wraps.json",
+      "expect": "opened",
+      "spec": "pod-encryption.md section 4.4, 6.4",
+      "tryWith": "conformance-passphrase-do-not-reuse",
+      "description": "readable; only migration refuses it"
+    },
+    {
+      "id": "A-013",
+      "header": "accept/A-013-v1.0-wrap-unknown-members.json",
+      "expect": "opened",
+      "spec": "pod-encryption.md section 4.4",
+      "tryWith": "conformance-passphrase-do-not-reuse",
+      "description": "a 1.0 wrap defines no label: any other member is ignored"
+    },
+    {
+      "id": "A-014",
+      "header": "accept/A-014-v1.0-unimplemented-wrap-first.json",
+      "expect": "opened",
+      "spec": "pod-encryption.md section 4.4",
+      "tryWith": "conformance-passphrase-do-not-reuse",
+      "description": "a 1.0 reserved kind (no label or createdAt in 1.0) is skipped"
+    }
+  ],
+  "filesystem": [
+    {
+      "id": "F-001",
+      "setup": "header-is-directory",
+      "expect": "malformed",
+      "spec": "4.1, 5.1",
+      "description": "settings/encryption.json is a directory. The Pod is encrypted and the header is refused."
+    },
+    {
+      "id": "F-002",
+      "setup": "header-symlink-to-valid-header",
+      "expect": "malformed",
+      "spec": "5.1, 8",
+      "description": "settings/encryption.json is a symbolic link to a valid header outside the Pod. Never followed; refused."
+    },
+    {
+      "id": "F-003",
+      "setup": "header-dangling-symlink",
+      "expect": "malformed",
+      "spec": "4.1, 5.1",
+      "description": "settings/encryption.json is a symbolic link to nothing. The Pod is encrypted (not plaintext) and the header is refused."
+    },
+    {
+      "id": "F-004",
+      "setup": "header-fifo",
+      "expect": "malformed",
+      "spec": "5.1",
+      "description": "settings/encryption.json is a FIFO with no writer. Refused without blocking."
+    },
+    {
+      "id": "F-005",
+      "setup": "header-symlink-to-dev-zero",
+      "expect": "malformed",
+      "spec": "5.1",
+      "description": "settings/encryption.json is a symbolic link to /dev/zero. Refused, reading at most 65,537 bytes."
+    },
+    {
+      "id": "F-006",
+      "setup": "settings-symlink-with-header",
+      "expect": "malformed",
+      "spec": "4.1, 5.1",
+      "description": "settings is a symbolic link to a directory holding a valid header. Refused."
+    },
+    {
+      "id": "F-007",
+      "setup": "settings-symlink-without-header",
+      "expect": "malformed",
+      "spec": "4.1",
+      "description": "settings is a symbolic link to a directory with no header. The Pod is encrypted, not plaintext, and the header is refused."
+    },
+    {
+      "id": "F-008",
+      "setup": "record-file-symlink-outside-pod",
+      "expect": "not-followed",
+      "spec": "8",
+      "description": "In the ts-produced-v1.1 Pod, clinical/medications.ttl is replaced by a symbolic link to a sealed copy of it outside the Pod. A reader refuses the path or skips it; it never returns the linked file's records."
+    },
+    {
+      "id": "F-009",
+      "setup": "container-symlink-outside-pod",
+      "expect": "not-followed",
+      "spec": "8",
+      "description": "In the ts-produced-v1.1 Pod, the clinical directory is replaced by a symbolic link to a copy of it outside the Pod. Never followed."
+    }
+  ]
+}
