@@ -1,6 +1,6 @@
 {
   "$comment": "Known failures of the Pod encryption vectors, per implementation. Same rules as the repository's top-level KNOWN_FAILURES.json, applied by scripts/check_pod_encryption.py instead of scripts/check_baseline.py: entries are keyed on (vector, reason) for the implementation the harness drives; a failure that is not listed fails the run AND a listed failure that starts passing fails the run, so the list can only shrink deliberately. Entries marked measured: false are for an implementation this harness cannot run (it is not public); they were derived by reading its code, are reported but not ratcheted, and must be confirmed by that implementation's own test suite running these vectors.",
-  "measuredWith": "cascade-cli 0.22.0 with the-cascade-protocol/cascade-cli#117 (branch fix/pod-path-safety at 565c6cd): 92 passed, 0 failed; no cascade-cli entries remain",
+  "measuredWith": "cascade-cli main at 53cfa7f (the-cascade-protocol/cascade-cli#117 merged): 92 passed, 0 failed; no cascade-cli entries remain",
   "entries": [
     {
       "vector": "N-026",
