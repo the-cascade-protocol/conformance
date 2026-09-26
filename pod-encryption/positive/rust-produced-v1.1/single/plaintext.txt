@@ -1,0 +1,3 @@
+@prefix oa: <http://www.w3.org/ns/oa#> .
+# Conformance fixture, manifest 1.1. No PHI: this text exists only to be encrypted.
+<urn:uuid:6f1d2c3a-9b4e-4c1f-8a2d-3e5b7c9d1f20> a oa:Annotation .

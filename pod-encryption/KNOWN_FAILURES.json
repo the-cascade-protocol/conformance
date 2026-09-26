@@ -1,0 +1,95 @@
+{
+  "$comment": "Known failures of the Pod encryption vectors, per implementation. Same rules as the repository's top-level KNOWN_FAILURES.json, applied by scripts/check_pod_encryption.py instead of scripts/check_baseline.py: entries are keyed on (vector, reason) for the implementation the harness drives; a failure that is not listed fails the run AND a listed failure that starts passing fails the run, so the list can only shrink deliberately. Entries marked measured: false are for an implementation this harness cannot run (it is not public); they were derived by reading its code, are reported but not ratcheted, and must be confirmed by that implementation's own test suite running these vectors.",
+  "measuredWith": "cascade-cli 0.22.0 built from main at 059a725",
+  "entries": [
+    {
+      "vector": "F-007",
+      "implementation": "cascade-cli",
+      "reason": "ACCEPTED",
+      "ownedBy": "cascade-cli",
+      "detail": "A settings directory that is a symbolic link to a directory with no header reads as a plaintext Pod; it must read as encrypted and refuse the header (spec 4.1)."
+    },
+    {
+      "vector": "F-008",
+      "implementation": "cascade-cli",
+      "reason": "FOLLOWED",
+      "ownedBy": "cascade-cli",
+      "detail": "The record reader follows a symbolic link at a record file's path and returns what it points to, outside the Pod (spec 8)."
+    },
+    {
+      "vector": "F-009",
+      "implementation": "cascade-cli",
+      "reason": "FOLLOWED",
+      "ownedBy": "cascade-cli",
+      "detail": "The record reader follows a container directory that is a symbolic link out of the Pod (spec 8)."
+    },
+    {
+      "vector": "N-004",
+      "implementation": "cascade-cli",
+      "reason": "ACCEPTED",
+      "ownedBy": "cascade-cli",
+      "detail": "Invalid UTF-8 inside a string is replaced with U+FFFD instead of refusing the header (spec 5.1)."
+    },
+    {
+      "vector": "N-051",
+      "implementation": "cascade-cli",
+      "reason": "ACCEPTED",
+      "ownedBy": "cascade-cli",
+      "detail": "t written as 3.0 is accepted: the JSON parser discards the lexical form (spec 4.5)."
+    },
+    {
+      "vector": "N-052",
+      "implementation": "cascade-cli",
+      "reason": "ACCEPTED",
+      "ownedBy": "cascade-cli",
+      "detail": "m written with an exponent is accepted (spec 4.5)."
+    },
+    {
+      "vector": "N-053",
+      "implementation": "cascade-cli",
+      "reason": "ACCEPTED",
+      "ownedBy": "cascade-cli",
+      "detail": "p written as 1e0 is accepted (spec 4.5)."
+    },
+    {
+      "vector": "N-026",
+      "implementation": "rust (Cascade desktop application)",
+      "reason": "ACCEPTED",
+      "ownedBy": "desktop application",
+      "detail": "By code inspection: a 1.1 wrap with no label member is read as label null (spec 4.3 requires the member).",
+      "measured": false
+    },
+    {
+      "vector": "N-027",
+      "implementation": "rust (Cascade desktop application)",
+      "reason": "ACCEPTED",
+      "ownedBy": "desktop application",
+      "detail": "By code inspection: a 1.1 wrap with no createdAt member is read as createdAt null (spec 4.3 requires the member).",
+      "measured": false
+    },
+    {
+      "vector": "N-030",
+      "implementation": "rust (Cascade desktop application)",
+      "reason": "ACCEPTED",
+      "ownedBy": "desktop application",
+      "detail": "By code inspection: an unimplemented 1.1 wrap with no label or createdAt is accepted (spec 4.3).",
+      "measured": false
+    },
+    {
+      "vector": "A-002",
+      "implementation": "rust (Cascade desktop application)",
+      "reason": "REFUSED",
+      "ownedBy": "desktop application",
+      "detail": "By code inspection: members of an unimplemented wrap (kdf, kdfParams, wrappedDek) are type-checked, so an unexpected shape refuses the header (spec 4.3 says they are not read).",
+      "measured": false
+    },
+    {
+      "vector": "A-013",
+      "implementation": "rust (Cascade desktop application)",
+      "reason": "REFUSED",
+      "ownedBy": "desktop application",
+      "detail": "By code inspection: a 1.0 wrap whose label is not a string refuses the header; 1.0 defines no label and unknown members are ignored (spec 4.4).",
+      "measured": false
+    }
+  ]
+}
