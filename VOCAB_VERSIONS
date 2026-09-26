@@ -233,7 +233,71 @@ health=2.10
 #   Note: health:SocialHistoryRecordShape declares only sh:Info-severity constraints,
 #   so no fixture can be rejected by it and the health: spelling has no negative
 #   counterpart. social-003 covers the clinical: spelling instead.
-clinical=1.19
+clinical=1.20
+# clinical=1.20: ONE new term, clinical:documentType (owl:DatatypeProperty,
+#   domain ClinicalDocument, range xsd:string): a human-readable document-type
+#   label (FHIR R4 DocumentReference.type.text), distinct in meaning from the
+#   closed-slug cascade:documentType software branches on. No term removed or
+#   renamed; clinical:narrativeText's comment is restated as the canonical
+#   spelling for FHIR Narrative text.div AND C-CDA section text alike (through
+#   v1.19 it named FHIR only). Three new shapes in clinical.shapes.ttl, each
+#   sh:Warning per the core v3.5 ratchet and each targeting the same seven
+#   document classes (ClinicalDocument, ProgressNote, DischargeSummary,
+#   ConsultationNote, LaboratoryReport, ImagingReport, VisitSummary):
+#   - clinical:NarrativeTextCountShape: sh:maxCount 1 on clinical:narrativeText,
+#     relaxed from the sh:Violation it carried on ClinicalDocumentShape through
+#     v1.19 (never fired there, because the narrative was written under an
+#     undeclared spelling).
+#   - clinical:DocumentTypeShape: sh:datatype xsd:string, sh:maxCount 1 on the
+#     new clinical:documentType.
+#   - clinical:NarrativeTextSpellingShape: sh:targetSubjectsOf
+#     cascade:narrativeText and sh:targetSubjectsOf clinical:content (two
+#     targets on one NodeShape, unioned), sh:maxCount 0 on each -- the
+#     migration-window signal for the two undeclared spellings a C-CDA import
+#     path wrote before this release.
+#   Fixtures: clinical/document-ccda-section-narrative.VALID (one
+#   clinical:narrativeText, one clinical:documentType, no legacy spelling --
+#   the release's target state), clinical/document-legacy-narrative-spelling
+#   .WARN (the same text written to BOTH cascade:narrativeText and
+#   clinical:content, no clinical:narrativeText -- the pre-release importer's
+#   actual output; two sh:Warning results, one per predicate, zero
+#   sh:Violation), clinical/document-documenttype-repeated.WARN (two
+#   clinical:documentType values on one document; one sh:Warning from
+#   DocumentTypeShape's own sh:maxCount 1, zero sh:Violation) and
+#   clinical/document-narrative-text-repeated.WARN (two clinical:narrativeText
+#   values on one document, modelling the exact scenario
+#   NarrativeTextCountShape's own comment names -- two C-CDA sections sharing
+#   one LOINC section code converting onto one section record; one
+#   sh:Warning from NarrativeTextCountShape's own sh:maxCount 1, zero
+#   sh:Violation).
+#   RED-first, measured against the previous pin (spec 735bb57, clinical
+#   1.19), where none of the three shapes exists: both original WARN
+#   fixtures report NO_WARNING (1 passed / 2 failed / 3 total, 140 constraint
+#   checks); the VALID fixture already passes there at 44 checks, which is
+#   what an additive release means for a record carrying no legacy spelling.
+#   document-narrative-text-repeated.WARN is RED there in the sharper way this
+#   shape's relaxation is about: it is REJECTED, not merely unnoticed --
+#   clinical:ClinicalDocumentShape's own sh:maxCount 1 on
+#   clinical:narrativeText fires at sh:Violation (VIOLATIONS, 48 constraint
+#   checks), because through v1.19 this constraint lived on
+#   ClinicalDocumentShape itself at its default severity rather than on a
+#   separate Warning-severity shape.
+#   GREEN at this pin: all four pass, 198 checks total (50 / 46 / 52 / 50
+#   respectively); the VALID fixture's count rising 44 -> 50 is the two new
+#   class-targeted shapes actually evaluating, not the fixture merely
+#   surviving.
+#   ALSO MEASURED, evidence about the corpus rather than the new fixtures:
+#   five pre-existing document fixtures (document-two-statuses-two-authors,
+#   status-clinicaldocument-appended, status-clinicaldocument-in-progress,
+#   status-laboratoryreport-corrected, status-laboratoryreport-in-progress)
+#   are also reached by the two class-targeted shapes and pick up 1-2
+#   constraint checks each (8 total); none trips a warning, since each
+#   carries at most one clinical:narrativeText, no clinical:documentType and
+#   no legacy spelling.
+#   Compared entry by entry across both pins (outcome, reason and constraint-
+#   check count) the pre-existing 190 fixtures' 27 failures are the same 27
+#   (fixture, reason) pairs at both; suite goes 163/190 (64,847 checks) to
+#   167/194 (65,053 checks).
 # clinical=1.19: NO new term. One rdfs:domain clinical:Condition DROPPED, from
 #   clinical:abatementDate, so it can be written on health:ConditionRecord.
 #   Four comment rewrites naming the canonical spellings. Neither the domain

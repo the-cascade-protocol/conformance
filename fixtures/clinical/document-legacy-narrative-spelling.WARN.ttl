@@ -1,0 +1,66 @@
+# clinical v1.20 — WARNING. The section narrative written to both undeclared
+# spellings a C-CDA import path used before this release, and to neither
+# canonical one.
+#
+# WHY THIS EXACT RECORD. This is not an invented mistake; it is what the
+# reference C-CDA import path emitted before v1.20 restated
+# clinical:narrativeText as covering C-CDA section text, byte for byte in
+# structure: the section's text lands on cascade:narrativeText, a predicate
+# core never defines, and a second time on clinical:content, a predicate
+# clinical never defines either. Both JSON-LD contexts already mapped the
+# short name narrativeText to clinical:narrativeText, so a record shaped like
+# this one had its only note text sitting on two predicates nothing
+# constrained and no context read back. Writing the same text to both
+# predicates rather than choosing one is the importer's actual behavior this
+# fixture is evidence about, not two independent defects.
+#
+# WHAT THIS FIXTURE ASSERTS, AND WHAT IT DELIBERATELY DOES NOT. It asserts
+# that clinical:NarrativeTextSpellingShape notices BOTH predicates: two
+# sh:Warning results, one per spelling (the shape's two sh:targetSubjectsOf
+# declarations union, so the record is reached once and reports once per
+# predicate that fires). It asserts equally that NOTHING REJECTS the record --
+# the narrative is optional at the shape level, so, as with the v1.19
+# medication effective dates, there is no sh:or window to fail and no pod
+# fails today for carrying either legacy spelling. The warning is the entire
+# migration window.
+#
+# The record carries NO clinical:narrativeText, which is what a converter that
+# has not yet been changed produces. clinical:documentType is left out
+# entirely so this fixture isolates the narrative-spelling axis; a document
+# exercising clinical:DocumentTypeShape's own warning is a separate fixture.
+#
+# THIS FIXTURE IS WHAT CLOSES THE WINDOW. clinical v1.20 says
+# NarrativeTextSpellingShape is removed once the warning is observably absent
+# from conforming output. Until the C-CDA converter writes
+# clinical:narrativeText, this fixture warns; when the window closes it must
+# be retired in the same commit that removes the shape, and its continuing to
+# warn is the record that the window is still open.
+#
+# Fully synthetic. Same clinic, visit shape and section content as
+# document-ccda-section-narrative.VALID.ttl, differing only in which
+# predicate carries the text and in carrying it twice, so the two records are
+# comparable term for term.
+
+@prefix cascade: <https://ns.cascadeprotocol.org/core/v1#> .
+@prefix clinical: <https://ns.cascadeprotocol.org/clinical/v1#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<urn:uuid:d0c00116-0000-4000-8000-000000000005> a clinical:ClinicalDocument ;
+    clinical:displayName "Progress Note" ;
+    clinical:documentDate "2031-04-02"^^xsd:date ;
+    clinical:status "final" ;
+    clinical:documentReferenceStatus "current" ;
+
+    # Same section narrative as the VALID sibling, written to BOTH undeclared
+    # spellings and to neither canonical one.
+    cascade:narrativeText "Continue lisinopril 20 mg once daily. Increase walking to 30 minutes five days a week as tolerated. Recheck basic metabolic panel and blood pressure in six weeks. Patient verbalized understanding of the plan and voiced no questions at the close of the visit." ;
+    clinical:content "Continue lisinopril 20 mg once daily. Increase walking to 30 minutes five days a week as tolerated. Recheck basic metabolic panel and blood pressure in six weeks. Patient verbalized understanding of the plan and voiced no questions at the close of the visit." ;
+
+    clinical:documentAuthorName "Dara Fennimore, MD" ;
+    clinical:fhirResourceId "DocumentReference/dr-56411" ;
+    clinical:fhirResourceType "DocumentReference" ;
+    clinical:importedAt "2031-04-05T09:40:12-05:00"^^xsd:dateTime ;
+    clinical:sourceEHR "Meridian Health System" ;
+    cascade:sourceIdentity "org:meridian" ;
+    cascade:dataProvenance cascade:EHRVerified ;
+    cascade:schemaVersion "1.4" .

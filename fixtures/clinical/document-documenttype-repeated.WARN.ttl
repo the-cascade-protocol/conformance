@@ -1,0 +1,44 @@
+# clinical v1.20 — WARNING. Two clinical:documentType values on one document.
+#
+# WHY THIS EXACT RECORD. clinical:documentType is FHIR R4
+# DocumentReference.type.text, 0..1 by the source element's own cardinality,
+# and it was written before it was declared: the FHIR import path writes
+# DocumentReference.type.text here, and (per the property's own comment in
+# clinical.ttl) a C-CDA-flavored path has been known to write the
+# cascade:documentType SLUG on this same predicate instead of the label the
+# property means. Two values is the shape of that confusion surfacing on one
+# record -- an addendum note whose importer appended a second label rather
+# than replacing the first -- not a value nothing produces in practice.
+#
+# WHAT THIS FIXTURE ASSERTS, AND WHAT IT DELIBERATELY DOES NOT. It asserts
+# that clinical:DocumentTypeShape's own sh:maxCount 1 fires as a sh:Warning,
+# per the core v3.5 ratchet that governs a constraint's first release. It
+# asserts equally that NOTHING REJECTS the record: clinical:documentType is
+# optional and single-valued only advisorially at this severity, so a second
+# value is noticed and not rejected.
+#
+# This fixture is deliberately narrow: no clinical:narrativeText, and neither
+# legacy narrative spelling, so nothing here is evidence about
+# NarrativeTextCountShape or NarrativeTextSpellingShape. Isolating the claim
+# is what lets a reader attribute the single sh:Warning to exactly one
+# property shape.
+#
+# Fully synthetic.
+
+@prefix cascade: <https://ns.cascadeprotocol.org/core/v1#> .
+@prefix clinical: <https://ns.cascadeprotocol.org/clinical/v1#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<urn:uuid:d0c00116-0000-4000-8000-000000000006> a clinical:ClinicalDocument ;
+    clinical:displayName "Progress Note Addendum" ;
+    clinical:documentType "Progress Note" ;
+    clinical:documentType "Progress Note Addendum" ;
+    clinical:documentDate "2031-04-03"^^xsd:date ;
+    clinical:status "final" ;
+    clinical:documentReferenceStatus "current" ;
+    clinical:fhirResourceId "DocumentReference/dr-56412" ;
+    clinical:fhirResourceType "DocumentReference" ;
+    clinical:importedAt "2031-04-05T09:40:12-05:00"^^xsd:dateTime ;
+    clinical:sourceEHR "Meridian Health System" ;
+    cascade:dataProvenance cascade:EHRVerified ;
+    cascade:schemaVersion "1.4" .
