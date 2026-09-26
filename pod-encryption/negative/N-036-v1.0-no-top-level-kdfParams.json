@@ -1,0 +1,11 @@
+{
+  "version": "1.0",
+  "algorithm": "aes-256-gcm",
+  "kdf": "argon2id",
+  "wraps": [
+    {
+      "by": "passphrase",
+      "wrappedDek": "lho/ZbLWVf7cHB6t1Akx9rkQPYF5XZjSDFT5QSucK515xctwJpnf1u0Ki2NpKZ9y5d1xXkLF7eht+JWc"
+    }
+  ]
+}
