@@ -54,7 +54,7 @@ The harness drives `cascade-cli` through its command line (no other implementati
 
 Entries in `KNOWN_FAILURES.json` marked `"measured": false` belong to an implementation this harness cannot run. They were found by reading its code, and are listed so that its own test suite, when it runs these vectors, confirms or removes them.
 
-Measured with `cascade-cli` 0.22.0 (built from `main` at `059a725`): 85 passed, 7 failed, 92 total; all 7 are listed.
+Measured with `cascade-cli` 0.22.0 plus the-cascade-protocol/cascade-cli#117 (branch `fix/pod-path-safety` at `565c6cd`): 92 passed, 0 failed, 92 total, so no `cascade-cli` entries are listed. `cascade-cli` 0.22.0 as released from `main` at `059a725` scored 85 of 92 (F-007, F-008, F-009, N-004, N-051, N-052, N-053 failed); this directory needs that fix merged before the harness is green against `main`.
 
 ## Regenerating
 
