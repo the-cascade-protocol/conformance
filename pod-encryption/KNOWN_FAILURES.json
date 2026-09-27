@@ -49,46 +49,6 @@
       "ownedBy": "cascade-cli",
       "version": "0.23.0",
       "detail": "Measured on the pinned 0.23.0: `version` and `vers\\u0069on`, the same name once escapes are decoded opens, because the reader keeps the last occurrence of a repeated member name (spec 4.1 requires a refusal). Fixed by the-cascade-protocol/cascade-cli#122; remove this entry when the CI pin moves to the first release that includes it."
-    },
-    {
-      "vector": "N-026",
-      "implementation": "rust (Cascade desktop application)",
-      "reason": "ACCEPTED",
-      "ownedBy": "desktop application",
-      "detail": "By code inspection: a 1.1 wrap with no label member is read as label null (spec 4.3 requires the member).",
-      "measured": false
-    },
-    {
-      "vector": "N-027",
-      "implementation": "rust (Cascade desktop application)",
-      "reason": "ACCEPTED",
-      "ownedBy": "desktop application",
-      "detail": "By code inspection: a 1.1 wrap with no createdAt member is read as createdAt null (spec 4.3 requires the member).",
-      "measured": false
-    },
-    {
-      "vector": "N-030",
-      "implementation": "rust (Cascade desktop application)",
-      "reason": "ACCEPTED",
-      "ownedBy": "desktop application",
-      "detail": "By code inspection: an unimplemented 1.1 wrap with no label or createdAt is accepted (spec 4.3).",
-      "measured": false
-    },
-    {
-      "vector": "A-002",
-      "implementation": "rust (Cascade desktop application)",
-      "reason": "REFUSED",
-      "ownedBy": "desktop application",
-      "detail": "By code inspection: members of an unimplemented wrap (kdf, kdfParams, wrappedDek) are type-checked, so an unexpected shape refuses the header (spec 4.3 says they are not read).",
-      "measured": false
-    },
-    {
-      "vector": "A-013",
-      "implementation": "rust (Cascade desktop application)",
-      "reason": "REFUSED",
-      "ownedBy": "desktop application",
-      "detail": "By code inspection: a 1.0 wrap whose label is not a string refuses the header; 1.0 defines no label and unknown members are ignored (spec 4.4).",
-      "measured": false
     }
   ]
 }
