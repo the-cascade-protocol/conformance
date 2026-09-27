@@ -36,7 +36,7 @@ The four envelope fixtures each hold `encryption.json` (the header), `resource.b
 
 | Kind | Where | Count | The claim |
 |---|---|---|---|
-| negative | `negative/N-*.json` | 64 | a header every reader MUST refuse **before deriving any key**, with the stated outcome: `malformed`, `unsupported-version` or `cannot-open`. One or more per refusal rule and per limit in sections 4, 5.1 and 5.3. |
+| negative | `negative/N-*.json` | 70 | a header every reader MUST refuse **before deriving any key**, with the stated outcome: `malformed`, `unsupported-version` or `cannot-open`. One or more per refusal rule and per limit in sections 4, 5.1 and 5.3, including N-065 to N-070: the same member name twice in one object (top level, a wrap, `kdfParams`, an unknown member, and two spellings of one name that are equal once escapes are decoded). |
 | accept | `accept/A-*.json` | 14 | a header every reader MUST open with the stated key: the rules that tell a reader what not to refuse (unknown kinds skipped, unknown members ignored, `createdAt` never parsed, duplicate salts, the header size and wrap-count limits themselves) |
 | file system | described in `vectors.json` | 9 | layouts a harness builds at test time, because a repository cannot carry a FIFO, a device or a symbolic link portably: header paths that are directories, links, FIFOs or `/dev/zero`, a `settings` directory that is a link, and links inside a Pod that point out of it (sections 4.1, 5.1, 8) |
 
@@ -50,11 +50,13 @@ To run a header vector by hand: make an empty directory, write the vector's byte
 python3 scripts/check_pod_encryption.py --cascade "node /path/to/cli/dist/index.js"
 ```
 
-The harness drives `cascade-cli` through its command line (no other implementation has a public adapter yet) and ratchets the result against `KNOWN_FAILURES.json` in this directory, the same way `scripts/check_baseline.py` ratchets the SHACL suite: an unlisted failure fails the run, and a listed failure that now passes also fails the run. It is not run in CI yet, because it needs a pinned build of the implementation under test.
+The harness drives `cascade-cli` through its command line (no other implementation has a public adapter yet) and ratchets the result against `KNOWN_FAILURES.json` in this directory, the same way `scripts/check_baseline.py` ratchets the SHACL suite: an unlisted failure fails the run, and a listed failure that now passes also fails the run.
 
-Entries in `KNOWN_FAILURES.json` marked `"measured": false` belong to an implementation this harness cannot run. They were found by reading its code, and are listed so that its own test suite, when it runs these vectors, confirms or removes them.
+CI runs it on every pull request (the `pod-encryption-harness` job in `.github/workflows/conformance.yml`) against a **published** `cascade-cli`, pinned to one release (`CASCADE_CLI_VERSION`, now `0.23.0`), so the result moves only when this repository moves it. Moving the pin is a deliberate change: bump the version, run the harness, and in the same change remove every entry it reports as `NOW PASSING`.
 
-Measured with `cascade-cli` `main` at `53cfa7f` (the-cascade-protocol/cascade-cli#117 merged): 92 passed, 0 failed, 92 total, so no `cascade-cli` entries are listed. `cascade-cli` 0.22.0 as released from `main` at `059a725` scored 85 of 92 (F-007, F-008, F-009, N-004, N-051, N-052, N-053 failed).
+Entries in `KNOWN_FAILURES.json` marked `"measured": false` belong to an implementation this harness cannot run. They were found by reading its code, and are listed so that its own test suite, when it runs these vectors, confirms or removes them. None are listed at present: the desktop application's own test suite now runs these vectors and passes every one, so its five earlier entries were removed.
+
+Measured with `cascade-cli` 0.23.0 as published, the pinned version: 92 passed, 6 failed, 98 total. The six are N-065 to N-070: 0.23.0 keeps the last occurrence of a repeated member name and opens the header. They are listed in `KNOWN_FAILURES.json` with `"version": "0.23.0"` and are **known failures pinned to 0.23.0 only**: the fix is the-cascade-protocol/cascade-cli#122, and the entries are removed when the pin moves to the first `cascade-cli` release that includes it. Until then, running the harness against a build that already has the fix (98 passed, 0 failed) reports those six as `NOW PASSING`, which is expected. Earlier: `cascade-cli` `main` at `53cfa7f` scored 92 of 92 on the 92 vectors of that time, and 0.22.0 scored 85 of 92.
 
 ## Regenerating
 

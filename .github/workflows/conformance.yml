@@ -1,6 +1,6 @@
 name: conformance
 
-# Two jobs on purpose.
+# The jobs, and why each exists.
 #
 #   runner-selftest  proves the runner AND the ratchet are capable of failing. It
 #                    mutates fixtures, shapes and baselines in temporary
@@ -14,6 +14,12 @@ name: conformance
 #                    and the report still names every failure; the JOB is green
 #                    only when nothing got worse and nothing got better without
 #                    the record being updated.
+#
+#   pod-encryption-vectors / pod-encryption-harness
+#                    the first proves the Pod encryption vectors are generated,
+#                    not hand-edited; the second runs them against a PUBLISHED,
+#                    pinned cascade-cli and ratchets the result against
+#                    pod-encryption/KNOWN_FAILURES.json.
 #
 #   literal-fidelity checks that parsing a fixture does not change the literals it
 #                    authored. rdflib rewrites the lexical form of a typed literal
@@ -95,8 +101,7 @@ jobs:
     # Standard library only. Regenerates every header vector and
     # pod-encryption/vectors.json in memory and fails if the committed files
     # differ, are missing, or include one the generator did not write. Running
-    # the vectors against an implementation needs a pinned build of it and is
-    # not part of CI yet (see pod-encryption/README.md).
+    # the vectors against an implementation is the pod-encryption-harness job.
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -107,6 +112,62 @@ jobs:
 
       - name: Check the generated vectors
         run: python scripts/gen_pod_encryption_vectors.py --check
+
+  pod-encryption-harness:
+    name: pod encryption vectors against the published cascade-cli (pinned)
+    # Runs every positive fixture, header vector and file system vector through
+    # the command line of a PUBLISHED cascade-cli, pinned to one release so the
+    # result changes only when this repository changes it, and ratchets the
+    # result against pod-encryption/KNOWN_FAILURES.json in both directions (a
+    # new failure fails the job; so does a listed failure that now passes).
+    #
+    # Moving the pin is a deliberate change: bump CASCADE_CLI_VERSION, run the
+    # harness, and in the same change remove every entry it reports as NOW
+    # PASSING and update the entries' version members.
+    #
+    # --ignore-scripts: the harness needs only the `pod` commands, which are
+    # pure JavaScript; no package install script is run.
+    runs-on: ubuntu-latest
+    env:
+      CASCADE_CLI_VERSION: "0.23.0"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install the pinned cascade-cli
+        run: |
+          set -euo pipefail
+          npm install --no-save --no-audit --no-fund --ignore-scripts \
+            --prefix "${RUNNER_TEMP}/cli" "@the-cascade-protocol/cli@${CASCADE_CLI_VERSION}"
+          CLI="${RUNNER_TEMP}/cli/node_modules/.bin/cascade"
+          # A resolver that quietly installed another version would make the
+          # ratchet compare against the wrong release.
+          test "$("$CLI" --version)" = "${CASCADE_CLI_VERSION}"
+          echo "CASCADE_CLI=${CLI}" >> "$GITHUB_ENV"
+
+      - name: Run the vectors and ratchet against the known failures
+        # pipefail: without it the step reports tee's exit code and a moved
+        # ratchet would read as green.
+        run: |
+          set -o pipefail
+          python scripts/check_pod_encryption.py --cascade "$CASCADE_CLI" | tee pod-encryption.txt
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "## Pod encryption vectors, cascade-cli ${CASCADE_CLI_VERSION}"
+            echo '```'
+            cat pod-encryption.txt 2>/dev/null || echo '(the harness did not run)'
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
 
   literal-fidelity:
     name: typed-literal fidelity (report-only)

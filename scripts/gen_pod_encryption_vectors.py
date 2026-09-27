@@ -277,6 +277,30 @@ VECTORS = [
     ("N-063", "wrappedDek-trailing-space", MALFORMED, "4.5", KEY_A, dump(v11(setter(["wraps", 0, "wrappedDek"], WDEK + " "))), "never trimmed"),
     ("N-064", "wrappedDek-not-string", MALFORMED, "4.3", KEY_A, dump(v11(setter(["wraps", 0, "wrappedDek"], 60))), "a number"),
 
+    # ── duplicate member names (spec 4.1) ─────────────────────────────────
+    # A header in which any JSON object contains the same member name twice is
+    # malformed; readers refuse it before deriving any key. Each vector repeats
+    # a name with values that are valid on their own, so a reader that keeps
+    # the last occurrence (as most JSON parsers do) opens it with the key.
+    ("N-065", "duplicate-member-top-level", MALFORMED, "4.1", KEY_A,
+     text_mut('"algorithm": "aes-256-gcm",', '"algorithm": "aes-256-gcm",\n  "algorithm": "aes-256-gcm",'),
+     "`algorithm` twice at the top level, with the same value both times"),
+    ("N-066", "duplicate-member-top-level-differing", MALFORMED, "4.1", KEY_A,
+     text_mut('"version": "1.1",', '"version": "2.0",\n  "version": "1.1",'),
+     "`version` twice at the top level: a reader that keeps the first sees an unknown version, one that keeps the last opens it"),
+    ("N-067", "duplicate-member-in-wrap", MALFORMED, "4.1", KEY_A,
+     text_mut('"label": "primary",', '"label": "primary",\n      "label": "primary",'),
+     "`label` twice inside the passphrase wrap"),
+    ("N-068", "duplicate-member-in-kdfParams", MALFORMED, "4.1", KEY_A,
+     text_mut('"t": 3', '"t": 3,\n        "t": 3'),
+     "`t` twice inside the wrap's kdfParams"),
+    ("N-069", "duplicate-member-unknown", MALFORMED, "4.1", KEY_A,
+     text_mut('"version": "1.1",', '"version": "1.1",\n  "x-note": "ignored",\n  "x-note": "ignored",'),
+     "an unknown member twice: unknown members are ignored, but the object holding them is still malformed"),
+    ("N-070", "duplicate-member-escaped", MALFORMED, "4.1", KEY_A,
+     text_mut('"version": "1.1",', '"version": "1.1",\n  "vers\\u0069on": "1.1",'),
+     "`version` and `vers\\u0069on`: names are compared after escapes are decoded, so these are the same name"),
+
     # ── headers a reader MUST open (spec 4.1, 4.3, 4.4, 5.3, 5.5) ──────────
     ("A-001", "unknown-kind-skipped", OPENED, "4.3", KEY_A,
      dump(v11(lambda h: h["wraps"].insert(0, keychain()))), "a reserved kind before the passphrase wrap is skipped"),
@@ -373,7 +397,7 @@ def generate() -> dict[Path, bytes]:
         })
     manifest = {
         "description": "Cross-implementation vectors for the Cascade Pod encryption format.",
-        "spec": f"the-cascade-protocol/spec, {SPEC}, version 1.0",
+        "spec": f"the-cascade-protocol/spec, {SPEC}, version 1.1",
         "generatedBy": "scripts/gen_pod_encryption_vectors.py (do not edit by hand; run it with --write)",
         "testOnlyKeys": "Every passphrase in this file is a TEST-ONLY value that protects nothing but these synthetic fixtures. Never use one for a real Pod.",
         "outcomes": {
