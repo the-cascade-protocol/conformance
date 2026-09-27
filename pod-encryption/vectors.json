@@ -1,6 +1,6 @@
 {
   "description": "Cross-implementation vectors for the Cascade Pod encryption format.",
-  "spec": "the-cascade-protocol/spec, pod-encryption.md, version 1.0",
+  "spec": "the-cascade-protocol/spec, pod-encryption.md, version 1.1",
   "generatedBy": "scripts/gen_pod_encryption_vectors.py (do not edit by hand; run it with --write)",
   "testOnlyKeys": "Every passphrase in this file is a TEST-ONLY value that protects nothing but these synthetic fixtures. Never use one for a real Pod.",
   "outcomes": {
@@ -584,6 +584,54 @@
       "spec": "pod-encryption.md section 4.3",
       "tryWith": "copper velvet orbit lantern mossy quartz",
       "description": "a number"
+    },
+    {
+      "id": "N-065",
+      "header": "negative/N-065-duplicate-member-top-level.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 4.1",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "`algorithm` twice at the top level, with the same value both times"
+    },
+    {
+      "id": "N-066",
+      "header": "negative/N-066-duplicate-member-top-level-differing.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 4.1",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "`version` twice at the top level: a reader that keeps the first sees an unknown version, one that keeps the last opens it"
+    },
+    {
+      "id": "N-067",
+      "header": "negative/N-067-duplicate-member-in-wrap.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 4.1",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "`label` twice inside the passphrase wrap"
+    },
+    {
+      "id": "N-068",
+      "header": "negative/N-068-duplicate-member-in-kdfParams.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 4.1",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "`t` twice inside the wrap's kdfParams"
+    },
+    {
+      "id": "N-069",
+      "header": "negative/N-069-duplicate-member-unknown.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 4.1",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "an unknown member twice: unknown members are ignored, but the object holding them is still malformed"
+    },
+    {
+      "id": "N-070",
+      "header": "negative/N-070-duplicate-member-escaped.json",
+      "expect": "malformed",
+      "spec": "pod-encryption.md section 4.1",
+      "tryWith": "copper velvet orbit lantern mossy quartz",
+      "description": "`version` and `vers\\u0069on`: names are compared after escapes are decoded, so these are the same name"
     },
     {
       "id": "A-001",

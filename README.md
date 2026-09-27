@@ -79,7 +79,7 @@ A further 94 files under `fixtures/` are the source side of those conversion ora
 
 ### Pod encryption fixtures (`pod-encryption/`)
 
-A separate set, outside `fixtures/` because it is not RDF and the SHACL runner does not execute it: cross-implementation fixtures and vectors for the Pod encryption format (`spec`, `pod-encryption.md`). Five positive fixtures written by two independent implementations, 64 negative header vectors, 14 acceptance vectors and 9 file system vectors, with their own generator, harness and known-failure ratchet. The passphrases in it are test-only. See [`pod-encryption/README.md`](pod-encryption/README.md).
+A separate set, outside `fixtures/` because it is not RDF and the SHACL runner does not execute it: cross-implementation fixtures and vectors for the Pod encryption format (`spec`, `pod-encryption.md`). Five positive fixtures written by two independent implementations, 70 negative header vectors, 14 acceptance vectors and 9 file system vectors, with their own generator, harness and known-failure ratchet. The passphrases in it are test-only. See [`pod-encryption/README.md`](pod-encryption/README.md).
 
 ## Running the suite
 
@@ -169,11 +169,12 @@ An SDK reading these fixtures inherits the same obligation. If your Turtle parse
 
 ### Continuous integration
 
-`.github/workflows/conformance.yml` runs on every push to `main` and every pull request, in two jobs:
+`.github/workflows/conformance.yml` runs on every push to `main` and every pull request, in these jobs:
 
 - **runner mutation tests** runs `scripts/selftest_runner.py`. This job is green and must stay green. If it goes red, no result from the other job means anything.
 - **literal fidelity** runs `scripts/check_literal_fidelity.py --report-only`. Non-gating for now: it reports, and CI stays green whatever it says. See [Typed literals are compared by lexical form, not by value](#typed-literals-are-compared-by-lexical-form-not-by-value).
 - **pod encryption vectors** runs `scripts/gen_pod_encryption_vectors.py --check`: the committed header vectors and `pod-encryption/vectors.json` must be exactly what the generator writes.
+- **pod encryption harness** installs a published `cascade-cli` pinned to one release and runs `scripts/check_pod_encryption.py` against it, ratcheting the result against `pod-encryption/KNOWN_FAILURES.json` in both directions. See [`pod-encryption/README.md`](pod-encryption/README.md).
 - **fixture suite** runs every fixture, prints the whole report, then ratchets it against `KNOWN_FAILURES.json`. The suite itself is still red and the report still names all 27 failures; the job is green only while nothing has got worse and nothing has got better without the record being updated. See [What a green CI run means](#what-a-green-ci-run-means).
 
 ## Current status
