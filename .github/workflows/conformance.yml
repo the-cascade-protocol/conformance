@@ -129,7 +129,7 @@ jobs:
     # pure JavaScript; no package install script is run.
     runs-on: ubuntu-latest
     env:
-      CASCADE_CLI_VERSION: "0.23.0"
+      CASCADE_CLI_VERSION: "0.25.0"
     steps:
       - uses: actions/checkout@v4
 

@@ -1,54 +1,5 @@
 {
   "$comment": "Known failures of the Pod encryption vectors, per implementation. Same rules as the repository's top-level KNOWN_FAILURES.json, applied by scripts/check_pod_encryption.py instead of scripts/check_baseline.py: entries are keyed on (vector, reason) for the implementation the harness drives; a failure that is not listed fails the run AND a listed failure that starts passing fails the run, so the list can only shrink deliberately. Entries marked measured: false are for an implementation this harness cannot run (it is not public); they were derived by reading its code, are reported but not ratcheted, and must be confirmed by that implementation's own test suite running these vectors. An entry with a version member was measured on that release of the implementation, the one the pod-encryption-harness CI job pins (.github/workflows/conformance.yml). When the pin moves to a release that fixes it, the harness reports it as NOW PASSING and the entry is removed in the same change; running the harness against an unreleased build that already has the fix reports the same thing.",
-  "measuredWith": "cascade-cli 0.23.0 as published to npm, the version the pod-encryption-harness CI job pins: 92 passed, 6 failed (N-065 to N-070, listed below). cascade-cli with the-cascade-protocol/cascade-cli#122 (not yet released): 98 passed, 0 failed.",
-  "entries": [
-    {
-      "vector": "N-065",
-      "implementation": "cascade-cli",
-      "reason": "ACCEPTED",
-      "ownedBy": "cascade-cli",
-      "version": "0.23.0",
-      "detail": "Measured on the pinned 0.23.0: `algorithm` twice at the top level opens, because the reader keeps the last occurrence of a repeated member name (spec 4.1 requires a refusal). Fixed by the-cascade-protocol/cascade-cli#122; remove this entry when the CI pin moves to the first release that includes it."
-    },
-    {
-      "vector": "N-066",
-      "implementation": "cascade-cli",
-      "reason": "ACCEPTED",
-      "ownedBy": "cascade-cli",
-      "version": "0.23.0",
-      "detail": "Measured on the pinned 0.23.0: `version` twice at the top level opens, because the reader keeps the last occurrence of a repeated member name (spec 4.1 requires a refusal). Fixed by the-cascade-protocol/cascade-cli#122; remove this entry when the CI pin moves to the first release that includes it."
-    },
-    {
-      "vector": "N-067",
-      "implementation": "cascade-cli",
-      "reason": "ACCEPTED",
-      "ownedBy": "cascade-cli",
-      "version": "0.23.0",
-      "detail": "Measured on the pinned 0.23.0: `label` twice inside a wrap opens, because the reader keeps the last occurrence of a repeated member name (spec 4.1 requires a refusal). Fixed by the-cascade-protocol/cascade-cli#122; remove this entry when the CI pin moves to the first release that includes it."
-    },
-    {
-      "vector": "N-068",
-      "implementation": "cascade-cli",
-      "reason": "ACCEPTED",
-      "ownedBy": "cascade-cli",
-      "version": "0.23.0",
-      "detail": "Measured on the pinned 0.23.0: `t` twice inside kdfParams opens, because the reader keeps the last occurrence of a repeated member name (spec 4.1 requires a refusal). Fixed by the-cascade-protocol/cascade-cli#122; remove this entry when the CI pin moves to the first release that includes it."
-    },
-    {
-      "vector": "N-069",
-      "implementation": "cascade-cli",
-      "reason": "ACCEPTED",
-      "ownedBy": "cascade-cli",
-      "version": "0.23.0",
-      "detail": "Measured on the pinned 0.23.0: an unknown member twice opens, because the reader keeps the last occurrence of a repeated member name (spec 4.1 requires a refusal). Fixed by the-cascade-protocol/cascade-cli#122; remove this entry when the CI pin moves to the first release that includes it."
-    },
-    {
-      "vector": "N-070",
-      "implementation": "cascade-cli",
-      "reason": "ACCEPTED",
-      "ownedBy": "cascade-cli",
-      "version": "0.23.0",
-      "detail": "Measured on the pinned 0.23.0: `version` and `vers\\u0069on`, the same name once escapes are decoded opens, because the reader keeps the last occurrence of a repeated member name (spec 4.1 requires a refusal). Fixed by the-cascade-protocol/cascade-cli#122; remove this entry when the CI pin moves to the first release that includes it."
-    }
-  ]
+  "measuredWith": "cascade-cli 0.25.0 as published to npm, the version the pod-encryption-harness CI job pins: 98 passed, 0 failed.",
+  "entries": []
 }
