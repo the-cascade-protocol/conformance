@@ -1,5 +1,7 @@
 # Cascade Protocol Conformance Test Suite
 
+> **Cascade Protocol v1.** In use today and being upgraded to Cascade Protocol v2. The v2 model is in [cascade-vocabulary](https://github.com/the-cascade-protocol/cascade-vocabulary) and [cascade-runtime-js](https://github.com/the-cascade-protocol/cascade-runtime-js).
+
 Version: 1.2
 Date: 2026-08-08
 
